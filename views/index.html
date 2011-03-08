@@ -88,7 +88,8 @@
 					</li>
 					<li><h2>登录</h2>
 					   <ul>
-					       <li><a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a></li>
+					       <li>
+					       {{if users.tsina }}@${users.tsina.screen_name}{{else}}<a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>{{/if}}</li>
 					       <li><a href="/login/twitter"><img src="/images/sign-in-with-twitter-d.png" /></a></li>
 					   </ul>
 					</li>
