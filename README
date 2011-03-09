@@ -2,3 +2,5 @@ requires:
  * express http://expressjs.com
  * jqtpl https://github.com/kof/node-jqtpl
  * redis https://github.com/mranney/node_redis
+ * node-mysql https://github.com/felixge/node-mysql
+
