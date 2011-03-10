@@ -2,6 +2,7 @@
 var express = require('express'),
 	tapi = require('node-weibo'),
 	user = require('./user.js'),
+	form = require('connect-form'),
 	job = require('./job.js');
 var mysql_db = new require('mysql').Client();
 mysql_db.user = 'root';
@@ -9,7 +10,11 @@ mysql_db.password = '123456';
 mysql_db.connect();
 mysql_db.query('USE tjob');
 
-var app = express.createServer();
+var app = express.createServer(
+	form({ keepExtensions: true })
+);
+var base_url = 'http://localhost:3000';
+app.base_url = base_url;
 
 app.mysql_db = mysql_db;
 

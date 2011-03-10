@@ -11,7 +11,7 @@
 <div id="wrapper">
     <div id="header">
         <div id="logo">
-            <h1><a href="/">工作达人</a></h1>
+            <h1><a href="/">淘Job</a></h1>
             <h2><a href="/">来淘宝工作吧</a></h2>
         </div>
         <!-- end div#logo -->
@@ -36,11 +36,40 @@
                     <p class="byline">由 <a href="${job.author.t_url}" target="_blank">@${job.author.screen_name}</a> 发布</p>
                     {{/if}}
                     <div class="entry">
-                        <p>{{html job.text}}</p>
+                        <p>{{html job.text.replace(/\n/g, '<br/>').replace(/\s/g, '&nbsp;')}}</p>
                     </div>
                     <div class="meta">
-                        <p class="links"><a href="#" class="comments">Comments (32)</a></p>
+                        <p class="links">
+                            <a href="/job/${job.id}#resume" class="resume_count">投递简历(${job.resume_count})</a>
+                            &nbsp;&nbsp;
+							<a href="#" class="repost_count">转发(${job.repost_count})</a>
+							&nbsp;&nbsp;
+							<a href="#" class="comment_count">评论(${job.comment_count})</a>
+						</p>
                     </div>
+                    <div>
+                        <h3><a name="resume" href="#resume"></a>投递简历</h3>
+                        <form method="post" action="/job/upload_resume/${job.id}" enctype="multipart/form-data">
+                            <label for="introducer">招聘信息来源（从谁的微博知道此信息的？）：</label><br/>
+                            <input type="text" id="introducer" name="introducer" size="50" /><br/><br/>
+                            <label for="resume">选择的要上传的简历：</label><br/>
+                            <input id="resume" name="resume" type="file" />
+                            <br/><br/>
+                            <input type="submit" value="提交简历" /> 
+                        </form>
+                    </div>
+                    <!-- <div>
+                        <h3>我来说两句</h3>
+                        <p>
+                            <textarea rows="5" style="width:80%;"></textarea>
+                            <br />
+                            <input id="repost_cb" type="checkbox" />
+                            <label for="repost_cb">同时转发到我的微博</label>
+                            &nbsp;&nbsp;
+                            <input type="button" value="发表评论" /> 
+                        </p>
+                    </div>
+                     -->
                 </div>
             </div>
             <!-- end div#content -->

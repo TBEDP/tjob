@@ -1,6 +1,12 @@
 // 处理用户认证相关逻辑
 var tapi = require('node-weibo');
-var base_url = 'http://localhost:3000';
+
+var tjob_user = {
+	username: 'tjob@sina.cn',
+	password: '112358',
+	blogtype: 'tsina',
+	authtype: 'baseauth'
+};
 
 function _format_cookie_token_name(blogtype) {
 	return blogtype + '_token';
@@ -63,7 +69,7 @@ function auth(app) {
 	app.get('/login/:blogtype', function(req, res) {
 		var blogtype = req.params.blogtype;
 		var user = {blogtype: blogtype};
-		var auth_callback = base_url + '/callback/' + blogtype;
+		var auth_callback = app.base_url + '/callback/' + blogtype;
 		var referer = req.header('Referer') || '/';
 		tapi.get_authorization_url(user, auth_callback, function(auth_url, auth_user) {
 			// 5分钟超时
@@ -136,3 +142,4 @@ function auth(app) {
 module.exports.auth = auth;
 module.exports.load_user_middleware = load_user_middleware;
 module.exports.get_users = get_users;
+module.exports.tjob_user = tjob_user;

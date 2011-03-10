@@ -3,4 +3,6 @@ requires:
  * jqtpl https://github.com/kof/node-jqtpl
  * redis https://github.com/mranney/node_redis
  * node-mysql https://github.com/felixge/node-mysql
+ * connect-form https://github.com/visionmedia/connect-form
 
+sina: @淘job tjob@sina.cn
