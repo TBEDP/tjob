@@ -1,111 +1,39 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>${title}</title>
-<meta name="keywords" content="" />
-<meta name="description" content="" />
-<link href="/css/default.css" rel="stylesheet" type="text/css" />
-</head>
-<body>
-<div id="wrapper">
-	<div id="header">
-		<div id="logo">
-			<h1><a href="/">工作达人</a></h1>
-			<h2><a href="/">来淘宝工作吧</a></h2>
-		</div>
-		<!-- end div#logo -->
-		<div id="menu">
-			<ul>
-				<li class="active"><a href="/">职位列表</a></li>
-				<li><a href="#">联系我们</a></li>
-				{{if users.tsina && users.tsina.user_role == 'author' }}
-				<li><a href="/job/create">发布职位信息</a></li>
-				{{/if}}
-			</ul>
-		</div>
-		<!-- end div#menu -->
-	</div>
-	<!-- end div#header -->
-	<div id="page">
-		<div id="page-bgtop">
-			<div id="content">
-			    {{each(i, job) jobs}}
-				<div class="post">
-					<h2 class="title"><a href="/job/${job.id}">${job.title}</a></h2>
-					{{if job.author}}
-					<p class="byline">由 <a href="${job.author.t_url}" target="_blank">@${job.author.screen_name}</a> 发布</p>
-					{{/if}}
-					<div class="entry">
-					   <p>${job.desc}</p>
-					</div>
-					<div class="meta">
-						<p class="links">
-						    <a href="/job/${job.id}#resume" class="resume_count">投递简历(${job.resume_count})</a>
-                            &nbsp;&nbsp;
-							<a href="#" class="repost_count">转发(${job.repost_count})</a>
-							&nbsp;&nbsp;
-							<a href="#" class="comment_count">评论(${job.comment_count})</a>
-						</p>
-					</div>
-				</div>
-				{{/each}}
-			</div>
-			<!-- end div#content -->
-			<div id="sidebar">
-				<ul>
-					<li id="search">
-						<h2>职位搜索</h2>
-						<form method="get" action="">
-							<fieldset>
-							<input type="text" id="seach-text" name="s" value="" />
-							<input type="submit" id="search-submit" value="职位搜索" />
-							</fieldset>
-						</form>
-					</li>
-					<li><h2>登录</h2>
-					   <ul>
-					       <li>
-					       {{if users.tsina }}[<a href="/logout/tsina">注销</a>] 
-					           <img src="${users.tsina.profile_image_url}" />
-					           <a href="${users.tsina.t_url}" target="_blank">@${users.tsina.screen_name}</a>
-					       {{else}}<a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
-					       {{/if}}
-					       </li>
-					       <li><a href="/login/twitter"><img src="/images/sign-in-with-twitter-d.png" /></a></li>
-					   </ul>
-					</li>
-					<li>
-                        <h2>热门职位</h2>
-                        <ul>
-                            <li><a href="#">测试架构师（广告技术-杭州）</a></li>
-                            <li><a href="#">推荐算法工程师-会员营销（运营支撑-杭州）</a></li>
-                            <li><a href="#">Python开发工程师</a></li>
-                            <li><a href="#">Web前端工程师</a></li>
-                        </ul>
-                    </li>
-					<li>
-						<h2>职位分类</h2>
-						<ul>
-							<li><a href="#">技术研发</a></li>
-							<li><a href="#">产品需求</a></li>
-							<li><a href="#">测试</a></li>
-							<li><a href="#">UED</a></li>
-						</ul>
-					</li>
-				</ul>
-			</div>
-			<!-- end div#sidebar -->
-			<div style="clear: both; height: 1px"></div>
-		</div>
-	</div>
-	<!-- end div#page -->
+{{each(i, job) jobs}}
+<div class="post">
+    <h2 class="title"><a href="/job/${job.id}">${job.title}</a></h2>
+    {{if job.author}}
+    <p class="byline">由 <a href="${job.author.t_url}" target="_blank">@${job.author.screen_name}</a> 发布</p>
+    {{/if}}
+    <div class="entry">
+       <p>${job.desc}</p>
+    </div>
+    <div class="meta">
+        <p class="links">
+            {{if users && users.tsina && users.tsina.is_author}}
+            <a href="/resumes?status=all&job=${job.id}">查看简历(${job.resume_count})</a>
+            &nbsp;&nbsp;
+            {{if job.status == 0 && users.tsina.user_id == job.author_id}}
+            <a href="/job/create?job=${job.id}">编辑信息</a>
+            &nbsp;&nbsp;
+            {{/if}}
+            |
+            &nbsp;&nbsp;
+            {{/if}}
+            <a href="/job/${job.id}#resume" class="resume_count">投递简历(${job.resume_count})</a>
+            &nbsp;&nbsp;
+            <a href="${job.weibo_info.t_url}" target="_blank" class="repost_count">转发(${job.repost_count})</a>
+            &nbsp;&nbsp;
+            <a href="${job.weibo_info.t_url}#a_comment" target="_blank" class="comment_count">评论(${job.comment_count})</a>
+        </p>
+    </div>
 </div>
-<!-- end div#wrapper -->
-	<div id="footer">
-		<p id="legal">Copyright &copy; 2011 taobao.com. All Rights Reserved. </p>
-		<p id="links"><a href="http://taobao.com">taobao.com</a> | <a href="#">Terms of Use</a></p>
-	</div>
-	<!-- end div#footer -->
-</body>
-</html>
+{{/each}}
+<p>
+    {{if prev_offset != null}}
+    <a href="/?c=${page_count}">首页</a>
+    <a href="/?o=${prev_offset}&c=${page_count}">上一页</a>
+    {{/if}}
+    {{if next_offset}}
+    <a href="/?o=${next_offset}&c=${page_count}">下一页</a>
+    {{/if}}
+</p>

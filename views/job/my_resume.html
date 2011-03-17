@@ -1,0 +1,15 @@
+<p>你已经投递了 ${resumes.length} 个职位</p>
+{{each(i, resume) resumes}}
+<div class="post">
+    <div class="entry">
+        <p>
+        投递职位: <a href="/job/${job.id}">${resume.job.title}</a><br />
+        查看简历: <a href="/download?p=${resume.filepath}">${resume.filename}</a><br />
+        职位信息来源: <a href="http://t.sina.com.cn/n/${resume.introducer}" target="_blank">@${resume.introducer}</a><br />
+        投递人: <a href="${resume.user.t_url}" target="_blank">@${resume.user.screen_name}</a><br />
+        投递时间: ${resume.created_at.format('yyyy-MM-dd hh:mm:ss')}<br />
+        状态: ${resume.status_name}
+        </p>
+    </div>
+</div>
+{{/each}}

@@ -1,12 +1,6 @@
 // 处理用户认证相关逻辑
-var tapi = require('node-weibo');
-
-var tjob_user = {
-	username: 'tjob@sina.cn',
-	password: '112358',
-	blogtype: 'tsina',
-	authtype: 'baseauth'
-};
+var tapi = require('node-weibo'),
+	config = require('./config.js');
 
 function _format_cookie_token_name(blogtype) {
 	return blogtype + '_token';
@@ -16,6 +10,7 @@ function _format_cookie_token_name(blogtype) {
 function load_user_middleware(app) {
 	return function(req, res, next) {
 		req.users = {};
+		res.local('users', req.users);
 		var users = {};
 		['tsina', 'twitter'].forEach(function(blogtype, i){
 			var name = _format_cookie_token_name(blogtype);
@@ -28,6 +23,8 @@ function load_user_middleware(app) {
 			get_users(app, Object.keys(users), function(rows) {
 				for(var user_id in rows) {
 					var row = rows[user_id];
+					row.is_author = row.user_role.indexOf('author') >= 0;
+					row.is_admin = row.user_role.indexOf('admin') >= 0 || row.screen_name == '淘job';
 					req.users[row.blogtype] = row;
 					delete users[user_id];
 				}
@@ -44,6 +41,24 @@ function load_user_middleware(app) {
 	};
 };
 
+// 必须具有author角色
+function require_author(req, res, next) {
+	if(req.users && req.users.tsina && req.users.tsina.is_author) {
+		next();
+	} else {
+		res.redirect('/');
+	}
+};
+
+//必须具有admin角色
+function require_admin(req, res, next) {
+	if(req.users && req.users.tsina && req.users.tsina.is_admin) {
+		next();
+	} else {
+		res.redirect('/');
+	}
+};
+
 function get_users(app, user_ids, callback) {
 	if(!user_ids || user_ids.length == 0) {
 		callback([]);
@@ -58,7 +73,7 @@ function get_users(app, user_ids, callback) {
 		for(var i=0; i<rows.length; i++) {
 			var row = rows[i];
 			var user = JSON.parse(row.info);
-			user.user_role = row.role;
+			user.user_role = row.role || '';
 			users[user.user_id] = user;
 		}
 		callback(users);
@@ -101,11 +116,12 @@ function auth(app) {
 					var user_id = blogtype + ':' + t_user.id;
 					t_user.user_id = user_id;
 					app.mysql_db.query('INSERT INTO user(user_id, blogtype, `info`, `role`, created_at) VALUES (?, ?, ?, "user", now()) ' 
-							+ 'ON DUPLICATE KEY UPDATE `info`=VALUES(`info`);',
+							+ ' ON DUPLICATE KEY UPDATE `info`=VALUES(`info`);',
 							[user_id, blogtype, JSON.stringify(t_user)], 
 						function(err, result) {
 							var name = _format_cookie_token_name(blogtype);
-							res.cookie(name, user_id, {path: '/'});
+							// 保存30天
+							res.cookie(name, user_id, {path: '/', maxAge: 138000000});
 							// TODO: 应该返回登录前的页面
 							res.redirect(referer);
 						}
@@ -137,9 +153,40 @@ function auth(app) {
 //			res.redirect(referer);
 //		}
 	});
+	
+	app.get('/users', load_user_middleware(app), require_admin, function(req, res, next){
+		app.mysql_db.query('select * from user order by id desc', function(err, rows){
+			if(err) {
+				next(err);
+			} else {
+				for(var i=0; i<rows.length; i++) {
+					var user = rows[i];
+					var t_user = JSON.parse(user.info);
+					delete t_user.id;
+					delete t_user.created_at;
+					Object.extend(user, t_user);
+				}
+				res.render('users.html', {
+					userlist: rows 
+				});
+			}
+		});
+	});
+	
+	app.post('/user/:id', load_user_middleware(app), require_admin, function(req, res, next){
+		var role = req.body.role || 'user';
+		app.mysql_db.query('update user set role=? where id=?', [role, req.params.id], function(err, rows){
+			if(err) {
+				next(err);
+			} else {
+				res.send('1');
+			}
+		});
+	});
 };
 
 module.exports.auth = auth;
 module.exports.load_user_middleware = load_user_middleware;
 module.exports.get_users = get_users;
-module.exports.tjob_user = tjob_user;
+module.exports.require_author = require_author;
+module.exports.require_admin = require_admin;

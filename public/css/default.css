@@ -11,11 +11,11 @@ Released for free under a Creative Commons Attribution 2.5 License
 }
 
 body {
-	margin-top: 40px;
+	margin-top: 10px;
 	background: #FFFFFF;
 	text-align: justify;
 	font-family: Arial, Helvetica, sans-serif;
-	font-size: 13px;
+	font-size: 12px;
 	color: #757E82;
 }
 
@@ -33,8 +33,8 @@ h3 {
 }
 
 p, blockquote, ul, ol {
-	margin-bottom: 20px;
-	line-height: 2em;
+	margin-bottom: 10px;
+	line-height: 1.6em;
 }
 
 p {
@@ -93,7 +93,7 @@ a:hover {
 	padding: 0;
 	text-transform: uppercase;
 	letter-spacing: 2px;
-	font-size: 10px;
+	font-size: 12px;
 	font-weight: bold;
 	color: #444444;
 }
@@ -119,10 +119,10 @@ a:hover {
 
 #menu ul {
 	margin: 0;
-	padding: 0px 0 0 20px;
+	padding: 0;
 	list-style: none;
 	line-height: normal;
-	margin-left: 30px;
+	margin-left: 10px;
 }
 
 #menu li {
@@ -205,7 +205,6 @@ a:hover {
 #content {
 	float: right;
 	width: 564px;
-	padding-top: 30px;
 }
 .post {
 	margin: 0px 0px 30px 0px;
@@ -218,10 +217,11 @@ a:hover {
 }
 
 .post .title a {
-	padding: 4px 35px 4px 15px;
+	padding: 4px 10px 4px 15px;
 	background: #EF8116;
 	text-decoration: none;
 	font-weight: normal;
+	font-size: 16px;
 	color: #FFFFFF;
 }
 
@@ -346,4 +346,25 @@ a:hover {
 
 #footer a:hover {
 	text-decoration: none;
+}
+
+/* other */
+table {
+    border-left: 1px solid #C1DAD7;
+    width: 100%;
+}
+
+table th { 
+	text-align:center; 
+    color: #4f6b72; 
+    border-right: 1px solid #C1DAD7; 
+    border-bottom: 1px solid #C1DAD7; 
+    border-top: 1px solid #C1DAD7; 
+    background: #CAE8EA; 
+}
+table td { 
+    border-right: 1px solid #C1DAD7; 
+    border-bottom: 1px solid #C1DAD7; 
+    color: #4f6b72; 
+    padding: 2px;
 }

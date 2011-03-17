@@ -1,0 +1,29 @@
+<script type="text/javascript">
+$(document).ready(function(){
+    $('.role_btn').click(function(){
+        var $this = $(this);
+        $this.attr('disabled', true);
+        var role = $this.prev('input').val();
+        var id = $this.parent().parent().find(':first-child').html();
+        $.post('/user/' + id, {role: role}, function(){
+            $this.removeAttr('disabled');
+        });
+    });
+});
+</script>
+<table cellspacing="0">
+  <tr>
+    <th>ID</th>
+    <th>姓名</th>
+    <th>角色</th>
+    <th>注册时间</th>
+  </tr>
+  {{each(i, user) userlist}}
+  <tr>
+    <td>${user.id}</td>
+    <td><a href="${user.t_url}" target="_blank">@${user.screen_name}</a></td>
+    <td><input type="text" value="${user.role}" /> <input class="role_btn" type="button" value="保存" /></td>
+    <td>${user.created_at.format()}</td>
+  </tr>
+  {{/each}}
+</table>

@@ -1,0 +1,51 @@
+<script type="text/javascript">
+$(document).ready(function(){
+    $('input.resume_status_cb').click(function(){
+        var $this = $(this);
+        var status = $this.attr('checked') ? 1 : 0;
+        var id = $this.parent().next().text();
+        $this.attr('disabled', 'disabled');
+        $.post('/resumes/update/' + id, {status: status}, function(data) {
+            $this.attr('disabled', '');
+        });
+    });
+});
+</script>
+<p>
+    {{if filter_status == '0'}}未读{{else}}<a href="/resumes?status=0">未读</a>{{/if}}
+    {{if filter_status == '1'}}已读{{else}}<a href="/resumes?status=1">已读</a>{{/if}}
+    {{if filter_status == 'all'}}全部{{else}}<a href="/resumes?status=all">全部</a>{{/if}}
+</p>
+{{if resumes.length > 0}}
+<table cellspacing="0">
+  <tr>
+    <th>已读</th>
+    <th>ID</th>
+    <th>姓名</th>
+    <th>简历</th>
+    <th>投递职位</th>
+    <th>投递时间</th>
+  </tr>
+  {{each(i, resume) resumes}}
+  <tr>
+    <td><input type="checkbox" class="resume_status_cb" {{if resume.status == 1}}checked="checked"{{/if}} /></td>
+    <td>${resume.id}</td>
+    <td>${resume.user.screen_name}</td>
+    <td><a href="/download?p=${encodeURI(resume.filepath)}">${resume.filename}</a></td>
+    <td><a href="/resumes?job=${resume.job.id}&status=all">简历(${resume.job.resume_count})</a> | <a href="/job/${resume.job.id}">查看</a> ${resume.job.title}</td>
+    <td>${resume.created_at.format('yyyy-MM-dd hh:mm')}</td>
+  </tr>
+  {{/each}}
+</table>
+{{else}}
+<p>暂无数据.</p>
+{{/if}}
+<p>
+    {{if prev_offset != null}}
+    <a href="/resumes?c=${page_count}&status=${filter_status}{{if job_id}}&job=${job_id}{{/if}}">首页</a>
+    <a href="/resumes?o=${prev_offset}&c=${page_count}&status=${filter_status}{{if job_id}}&job=${job_id}{{/if}}">上一页</a>
+    {{/if}}
+    {{if next_offset}}
+    <a href="/resumes?o=${next_offset}&c=${page_count}&status=${filter_status}{{if job_id}}&job=${job_id}{{/if}}">下一页</a>
+    {{/if}}
+</p>
