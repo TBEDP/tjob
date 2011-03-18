@@ -86,11 +86,18 @@ function auth(app) {
 		var user = {blogtype: blogtype};
 		var auth_callback = app.base_url + '/callback/' + blogtype;
 		var referer = req.header('Referer') || '/';
-		tapi.get_authorization_url(user, auth_callback, function(auth_url, auth_user) {
-			// 5分钟超时
-			var auth_info = JSON.stringify([auth_user.oauth_token_secret, referer]);
-			res.cookie('authinfo', auth_info, {path: '/'});
-			res.redirect(auth_url);
+		// 防止死跳转
+		if(referer.indexOf('/login/') >= 0) {
+			referer = '/';
+		}
+		tapi.get_authorization_url(user, auth_callback, function(auth_url, auth_user, text_status, error_code) {
+			if(auth_url) {
+				var auth_info = JSON.stringify([auth_user.oauth_token_secret, referer]);
+				res.cookie('authinfo', auth_info, {path: '/'});
+				res.redirect(auth_url);
+			} else {
+				res.send('新浪登录异常，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
+			}
 		});
 	});
 

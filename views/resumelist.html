@@ -30,7 +30,7 @@ $(document).ready(function(){
   <tr>
     <td><input type="checkbox" class="resume_status_cb" {{if resume.status == 1}}checked="checked"{{/if}} /></td>
     <td>${resume.id}</td>
-    <td>${resume.user.screen_name}</td>
+    <td><a href="/resume/list/${resume.user.user_id}">${resume.user.screen_name}</a></td>
     <td><a href="/download?p=${encodeURI(resume.filepath)}">${resume.filename}</a></td>
     <td><a href="/resumes?job=${resume.job.id}&status=all">简历(${resume.job.resume_count})</a> | <a href="/job/${resume.job.id}">查看</a> ${resume.job.title}</td>
     <td>${resume.created_at.format('yyyy-MM-dd hh:mm')}</td>

@@ -368,3 +368,11 @@ table td {
     color: #4f6b72; 
     padding: 2px;
 }
+
+.radio, .radio_text {
+    cursor: pointer;
+}
+
+a img {
+    border: 0;
+}

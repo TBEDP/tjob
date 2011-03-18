@@ -1,10 +1,4 @@
-var STRING_FORMAT_REGEX = /\{\{([\w\s\.\(\)"',-\[\]]+)?\}\}/g;
-String.prototype.format = function(values) {
-    return this.replace(STRING_FORMAT_REGEX, function(match, key) {
-        return values[key] || eval('(values.' +key+')');
-    });
-};
-
+// 详细页面逻辑
 $(document).ready(function(){
     $('#update_resume_btn').click(function(){
         $('#introducer').val($('#resume_introducer').text());
@@ -26,19 +20,38 @@ $(document).ready(function(){
             });
         }
     });
-    
-    var job_id = $('#job_id').val(), weibo_id = $('#job_weibo_id').val();
+    var current_user_id = $('#current_user_id').val();
+	var job_id = $('#job_id').val(), weibo_id = $('#job_weibo_id').val();
     // 获取转发人列表
     $.getJSON('/job/' + job_id + '/repost_users/' + weibo_id, function(users){
-    	if(users.length == 0) {
-    		return;
+    	if(Object.keys(users).length > 0) {
+    		$('#repost_users').append('转发者: ');
+    		for(var screen_name in users){
+            	var item = {
+            		screen_name: screen_name,
+            		screen_name_encode: encodeURI(screen_name)
+            	};
+                $('#repost_users').append('<a target="_blank" href="http://t.sina.com.cn/n/{{screen_name_encode}}">@{{screen_name}}</a>&nbsp;&nbsp;'.format(item));;
+            }
+		}
+    	if(current_user_id) {
+	        var $introducer_selector = $('#introducer_selector');
+	        var author = $('#author_link').text().substring(1);
+	        var default_introducer = $('#resume_introducer').text().substring(1) || author;
+	        users[author] = 1;
+	        for(var screen_name in users){
+	        	var item = {
+            		screen_name: screen_name,
+            		checked: ''
+            	};
+	        	if(screen_name == default_introducer) {
+	        		item.checked = 'checked="checked"';
+	        	}
+	        	$introducer_selector.append('<input type="radio" class="radio" name="introducer" {{checked}} value="{{screen_name}}" /><lable class="radio_text">@{{screen_name}}</label>&nbsp;&nbsp;'.format(item));
+	        }
+	        $('.radio_text').click(function(){
+	        	$(this).prev().click();
+	        });
     	}
-        var html = '转发者: ';
-        for(var i=0;i<users.length;i++){
-        	var item = users[i];
-        	item.screen_name_encode = encodeURI(item.screen_name);
-            html += '&nbsp;&nbsp;<a target="_blank" href="http://t.sina.com.cn/n/{{screen_name_encode}}">@{{screen_name}}</a>'.format(item);
-        }
-        $('#repost_users').html(html);
     });
 });

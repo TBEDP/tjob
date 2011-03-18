@@ -1,4 +1,4 @@
-// 招聘信息转发进程, 5分钟发送一次
+// 招聘信息转发进程, 1分钟发送一次
 // 到job表 repost_id 为空的记录发送
 var tapi = require('node-weibo'),
 	config = require('../config.js'),
@@ -12,11 +12,11 @@ function send_job_weibo(callback) {
 		if(err) {
 			console.error(err);
 		}
-		console.log('send_job_weibo', rows.length, 'rows');
 		if(rows.length == 0){
 			callback();
 			return;
 		}
+		console.log('send_job_weibo', rows.length, 'rows');
 		var finished = 0;
 		function row_finished(){
 			if(++finished == rows.length) {
@@ -67,8 +67,8 @@ function repost_job_weibo(callback){
 		if(err) {
 			console.error(err);
 		}
-		console.log('repost_job_weibo', rows.length, 'rows');
 		if(rows.length == 1) {
+			console.log('repost_job_weibo', rows.length, 'rows');
 			var job = rows[0];
 			tapi.repost({user: tjob_user, id: job.weibo_id, status:'推荐职位 #' + job.title + '#'}, function(data){
 				if(data && data.id) {
@@ -104,8 +104,8 @@ function job_total_count(callback) {
 		if(err) {
 			console.error(err);
 		}
-		console.log('job_total_count', rows.length, 'rows');
 		if(rows.length > 0) {
+			console.log('job_total_count', rows.length, 'rows');
 			var jobs = {};
 			rows.forEach(function(job){
 				jobs[job.weibo_id] = job;
@@ -137,7 +137,7 @@ function job_total_count(callback) {
 						}
 						// 最大30分钟间隔
 						sqls.push(sql.replace('{last_check}', 'DATE_ADD(now(), interval ' 
-								+ (Math.max(5 * (job.check_same_count + 1), 30)) + ' minute)'));
+								+ (Math.max(2 * (job.check_same_count + 1), 30)) + ' minute)'));
 						params = params.concat([job.check_same_count, job.fetch_repost, 
 						                        job.repost_count, job.comment_count, job.id]);
 					}
@@ -161,8 +161,8 @@ function fetch_job_repost(callback) {
 		if(err) {
 			console.error(err);
 		}
-		console.log('fetch_job_repost', rows.length, 'rows');
 		if(rows.length >0) {
+			console.log('fetch_job_repost', rows.length, 'rows');
 			var finished = 0, results = [];
 			rows.forEach(function(row){
 				var params = {user: tjob_user, id: row.weibo_id};

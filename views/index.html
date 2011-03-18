@@ -1,6 +1,7 @@
+
 {{each(i, job) jobs}}
 <div class="post">
-    <h2 class="title"><a href="/job/${job.id}">${job.title}</a></h2>
+    <h2 class="title" id="job_${job.weibo_id}"><a href="/job/${job.id}">${job.title}</a></h2>
     {{if job.author}}
     <p class="byline">由 <a href="${job.author.t_url}" target="_blank">@${job.author.screen_name}</a> 发布</p>
     {{/if}}
@@ -21,9 +22,9 @@
             {{/if}}
             <a href="/job/${job.id}#resume" class="resume_count">投递简历(${job.resume_count})</a>
             &nbsp;&nbsp;
-            <a href="${job.weibo_info.t_url}" target="_blank" class="repost_count">转发(${job.repost_count})</a>
+            <a href="${job.weibo_info.t_url}" target="_blank" class="repost_count">转发(<span>${job.repost_count}</span>)</a>
             &nbsp;&nbsp;
-            <a href="${job.weibo_info.t_url}#a_comment" target="_blank" class="comment_count">评论(${job.comment_count})</a>
+            <a href="${job.weibo_info.t_url}#a_comment" target="_blank" class="comment_count">评论(<span>${job.comment_count}</span>)</a>
         </p>
     </div>
 </div>

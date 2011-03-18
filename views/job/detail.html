@@ -2,9 +2,9 @@
 <input type="hidden" id="job_id" value="${job.id}" />
 <input type="hidden" id="job_weibo_id" value="${job.weibo_id}" />
 <div class="post">
-    <h2 class="title"><a href="/job/${job.id}">${job.title}</a></h2>
+    <h2 class="title" id="job_${job.weibo_id}"><a href="/job/${job.id}">${job.title}</a></h2>
     {{if job.author}}
-    <p class="byline">由 <a href="${job.author.t_url}" target="_blank">@${job.author.screen_name}</a> 发布</p>
+    <p class="byline">由 <a id="author_link" href="${job.author.t_url}" target="_blank">@${job.author.screen_name}</a> 发布</p>
     {{/if}}
     <div class="entry">
         <p>{{html job.text.replace(/\n/g, '<br/>').replace(/\s/g, '&nbsp;')}}</p>
@@ -26,9 +26,9 @@
             {{/if}}
             <a href="/job/${job.id}#resume" class="resume_count">投递简历(${job.resume_count})</a>
             &nbsp;&nbsp;
-            <a href="${job.weibo_info.t_url}" target="_blank" class="repost_count">转发(${job.repost_count})</a>
+            <a href="${job.weibo_info.t_url}" target="_blank" class="repost_count">转发(<span>${job.repost_count}</span>)</a>
             &nbsp;&nbsp;
-            <a href="${job.weibo_info.t_url}#a_comment" target="_blank" class="comment_count">评论(${job.comment_count})</a>
+            <a href="${job.weibo_info.t_url}#a_comment" target="_blank" class="comment_count">评论(<span>${job.comment_count}</span>)</a>
         </p>
     </div>
     <div>
@@ -47,12 +47,13 @@
                 </p>
                 {{/if}}
             <form id="upload_resume_form" {{if resume}}style="display:none;"{{/if}} method="post" action="/resume/upload/${job.id}" enctype="multipart/form-data">
-                <label for="introducer">招聘信息来源（从谁的微博知道此信息的？）：</label><br/>
-                <input type="text" id="introducer" name="introducer" size="50" /><br/><br/>
+                <label for="introducer">招聘信息来源(从谁的微博知道此信息的?):</label><br/>
+                <!-- <input type="text" id="introducer" name="introducer" size="50" /><br/><br/>  -->
+                <p id="introducer_selector"></p>
                 <label for="resume">选择的要上传的简历：</label><br/>
                 <input id="resume" name="resume" type="file" accept="png,gif,jpg,jpeg,doc,docx,pdf,txt,wps,ini" />
                 <br/><br/>
-                <input id="upload_btn" style="display:none;" type="submit" value="提交简历" /> 
+                <input id="upload_btn" style="display:none;" type="submit" value=" 提交简历 " /> 
             </form>
             {{else}}
             <p>

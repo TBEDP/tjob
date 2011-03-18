@@ -1,8 +1,11 @@
 // tjob web
 var utillib = require('./util.js');
 var express = require('express'),
+	path = require('path'),
+	fs = require('fs'),
 	form = require('connect-form'),
 	tapi = require('node-weibo'),
+	utillib = require('./util.js');
 	user = require('./user.js'),
 	config = require('./config.js'),
 	job = require('./job.js');
@@ -42,6 +45,22 @@ app.use(express.static(__dirname + '/public'));
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 
+//日志格式
+var log_path = path.join(__dirname, 'web.log');
+var log_write_stream = fs.createWriteStream(log_path, {flags: 'a'});
+process.on('exit', function(){
+	console.log('process exit, log end()');
+	log_write_stream.end();
+});
+var logger_options = {
+	format: ':http-version|:method|:url|:status|:response-time|:remote-addr|:referrer|:date|:user-agent',
+	stream: log_write_stream
+};
+app.use(express.logger(logger_options));
+
+app.use(express.errorHandler({ dumpExceptions: true }));
+//app.use(express.errorHandler({ showStack: true, dumpExceptions: true }));
+
 // use jqtpl in express
 app.set("view engine", "html");
 app.set('view options', {
@@ -68,6 +87,24 @@ app.get('/', app.load_user_middleware, function(req, res){
 		res.render('index.html', locals);
 	});
 });
+
+app.post('/tapi/counts', app.load_user_middleware, function(req, res){
+	if(req.users.tsina) {
+		tapi.counts({user: req.users.tsina, ids: req.body.ids}, function(data) {
+			var counts = [];
+			if(!data.error) {
+				counts = data;
+			}
+			res.send(JSON.stringify(counts));
+		});
+	} else {
+		res.send('[]');
+	}
+});
+
+//app.get('/500', function(req, res){
+//	throw new Error('keyboard cat!');
+//});
 
 job.add(app);
 

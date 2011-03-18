@@ -8,23 +8,14 @@
 	<link href="/css/default.css" rel="stylesheet" type="text/css" />
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script> 
 	<script>!window.jQuery && document.write('<script src="http://code.jquery.com/jquery-1.4.2.min.js"><\/script>');</script>
-    <script type="text/javascript">
-    $(document).ready(function(){
-        var pathname = window.location.pathname;
-        $('#menu ul li a').each(function(){
-            if($(this).attr('href') == pathname){
-                $(this).parent().addClass('active');
-            }
-        });
-    });
-    </script>
+    <script src="/js/util.js"></script>
+    <script src="/js/main.js"></script>
 </head>
 <body>
 <div id="wrapper">
     <div id="header">
         <div id="logo">
-            <h1><a href="/">淘Job</a></h1>
-            <h2><a href="/">来淘宝工作吧</a></h2>
+            <a href="/"><img alt="淘Job, 来淘宝工作吧" src="/images/tjob.jpg" /></a>
         </div>
         <!-- end div#logo -->
         <div id="menu">
@@ -70,8 +61,10 @@
                            <li>
                            {{if users.tsina }}[<a href="/logout/tsina">注销</a>] 
                                <img src="${users.tsina.profile_image_url}" />
-                               <a href="${users.tsina.t_url}" target="_blank">@${users.tsina.screen_name}</a>
-                           {{else}}<a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
+                               <a id="current_user_link" href="${users.tsina.t_url}" target="_blank">@${users.tsina.screen_name}</a>
+                               <input id="current_user_id" type="hidden" value="${users.tsina.user_id}" />
+                           {{else}}
+                               <a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
                            {{/if}}
                            </li>
                            <!-- 
@@ -108,10 +101,11 @@
     <!-- end div#page -->
 </div>
 <!-- end div#wrapper -->
-    <div id="footer">
-        <p id="legal">Copyright &copy; 2011 taobao.com. All Rights Reserved. </p>
-        <p id="links"><a href="http://data.taobao.com">data.taobao.com</a></p>
-    </div>
-    <!-- end div#footer -->
+<div id="footer">
+    <p id="legal">Copyright &copy; 2011 <img src="/favicon.ico" />taobao.com. All Rights Reserved. 
+    <script type="text/javascript" src="http://js.tongji.linezing.com/2341473/tongji.js"></script><noscript><a href="http://www.linezing.com"><img src="http://img.tongji.linezing.com/2341473/tongji.gif"/></a></noscript>
+    </p>
+</div>
+<!-- end div#footer -->
 </body>
 </html>

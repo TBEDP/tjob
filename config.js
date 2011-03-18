@@ -12,7 +12,7 @@ var db_options = module.exports.db_options = {
 dns.lookup(os.hostname(), function(err, address, family){
 	module.exports.ip = address;
 	module.exports.base_url = 'http://' + address + ':' + port;
-	console.log('dns get ip', address);
+	//console.log('dns get ip', address);
 });
 
 var tjob_user = module.exports.tjob_user = {
