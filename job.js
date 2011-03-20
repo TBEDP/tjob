@@ -416,6 +416,27 @@ function add(app) {
 			}
 		});
 	});
+	
+	// 职位搜索
+	app.get('/job/search', function(req, res, next){
+		var query = req.query.q;
+		var locals = {
+			title: query + ' - 职位搜索',
+			query: query,
+			jobs: []
+		};
+		if(!query) {
+			res.render('index.html', locals);
+		} else {
+			query = mysql_db.escape(query.replace(/\?/g, ''));
+			query = query.substring(1, query.length - 1); // remove '
+//			console.log('where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query));
+			get_jobs(app, 'where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query), [], function(rows){
+				locals.jobs = rows;
+				res.render('index.html', locals);
+			});
+		}
+	});
 };
 
 module.exports.add = add;
