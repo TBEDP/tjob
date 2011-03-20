@@ -404,6 +404,18 @@ function add(app) {
 			}
 		});
 	});
+	
+	// 热门职位
+	app.get('/job/hot', function(req, res, next){
+		mysql_db.query('select id, title from job where status=0 order by resume_count desc, repost_count desc limit 10;',
+				function(err, rows){
+			if(err) {
+				next(err);
+			} else {
+				res.send(JSON.stringify(rows));
+			}
+		});
+	});
 };
 
 module.exports.add = add;

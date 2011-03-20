@@ -23,4 +23,12 @@ $(document).ready(function(){
             }, 'json');
         }
     }
+    
+    // 获取热门职位
+    $.getJSON('/job/hot', function(jobs){
+    	var $hot_jobs = $('#hot_jobs');
+    	$.each(jobs, function(i, job) {
+    		$hot_jobs.append('<li><a href="/job/{{id}}">{{title}}</a></li>'.format(job));
+    	});
+    });
 });

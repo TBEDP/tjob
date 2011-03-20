@@ -7,7 +7,7 @@
     <p class="byline">由 <a id="author_link" href="${job.author.t_url}" target="_blank">@${job.author.screen_name}</a> 发布</p>
     {{/if}}
     <div class="entry">
-        <p>{{html job.text.replace(/\n/g, '<br/>').replace(/\s/g, '&nbsp;')}}</p>
+        <p>{{html job.text}}</p>
         <p id="repost_users"></p>
     </div>
     <div class="meta">

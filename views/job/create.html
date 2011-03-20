@@ -1,3 +1,5 @@
+<script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
+<script type="text/javascript" src="/js/editor.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){
     $('#desc, #title').keyup(function(){
@@ -9,9 +11,9 @@ $(document).ready(function(){
         $('#weibo_preview').html(text);
         $('#wordcount').html(140 - $('#weibo_preview').html().length);
     });
-    $('#desc, #title, #text').keyup(function(){
+    $('#desc, #title').keyup(function(){
         $('#save_job_btn').show();
-        $('#desc, #title, #text').each(function(){
+        $('#desc, #title').each(function(){
             if(!$(this).val()) {
                 $('#save_job_btn').hide();
             }
@@ -20,22 +22,17 @@ $(document).ready(function(){
 });
 </script>
 <form method="post" action="/job/create">
-<div class="post">
-    <div class="entry">
-        <h3>微博预览 (剩余 <span id="wordcount">140</span>)</h3>
-        <p id="weibo_preview"></p>
-        <h3>职位名称</h3>
-        <input type="text" name="title" id="title" style="width: 100%;" value="${job.title}"  />
-        <h3>职位概要，请确保微博在140字以内，用于发布微博内容</h3>
-        <textarea rows="5" name="desc" id="desc" style="width: 100%;">${job.desc}</textarea>
-        <h3>职位详细描述及要求</h3>
-        <textarea rows="20" name="text" id="text" style="width: 100%;">${job.text}</textarea>
-        {{if job.id}}
-        <input type="hidden" name="id" value="${job.id}" />
-        {{/if}}
-    </div>
-    <div class="buttons">
-        <p class="links"><input style="display:none;" id="save_job_btn" type="submit" value="{{if job.id}}更新{{else}}发布{{/if}}信息" /></p>
-    </div>
-</div>
+<h3>微博预览 (剩余 <span id="wordcount">140</span>)</h3>
+<p id="weibo_preview"></p>
+<h3>职位名称</h3>
+<input type="text" name="title" id="title" style="width: 100%;" value="${job.title}"  />
+<h3>职位概要，请确保微博在140字以内，用于发布微博内容</h3>
+<textarea rows="5" name="desc" id="desc" style="width: 100%;">${job.desc}</textarea>
+<h3>职位详细描述及要求</h3>
+<textarea class="tinymce" name="text" id="text" >${job.text}</textarea>
+{{if job.id}}
+<input type="hidden" name="id" value="${job.id}" />
+{{/if}}
+<br/>
+<input style="display:none;" id="save_job_btn" type="submit" value="{{if job.id}}更新{{else}}发布{{/if}}信息" />
 </form>
