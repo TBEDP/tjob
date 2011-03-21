@@ -1,7 +1,8 @@
 var os = require('os'),
 	dns = require('dns');
 
-var port = module.exports.port = 3000;
+var debug = true;
+var port = module.exports.port = 8099;
 var db_options = module.exports.db_options = {
 	host: 'localhost',
 	port: 3306,
@@ -9,11 +10,20 @@ var db_options = module.exports.db_options = {
 	password: '123456',
 	database: 'tjob'
 };
-dns.lookup(os.hostname(), function(err, address, family){
-	module.exports.ip = address;
-	module.exports.base_url = 'http://' + address + ':' + port;
-	//console.log('dns get ip', address);
-});
+
+//if(debug) {
+//	dns.lookup(os.hostname(), function(err, address, family){
+//		module.exports.ip = address;
+//		module.exports.base_url = 'http://' + address;
+//	});
+//} else {
+//	var address = 'taojob.tbdata.org';
+//	module.exports.ip = address;
+//	module.exports.base_url = 'http://' + address;
+//}
+var address = 'taojob.tbdata.org';
+module.exports.ip = address;
+module.exports.base_url = 'http://' + address;
 
 var tjob_user = module.exports.tjob_user = {
 	"id":"1989184342",

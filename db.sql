@@ -23,7 +23,8 @@ CREATE TABLE  `tjob`.`job` (
   KEY `title` (`title`) USING BTREE,
   KEY `author_id` (`author_id`) USING BTREE,
   KEY `last_check` (`last_check`),
-  KEY `fetch_repost` (`fetch_repost`)
+  KEY `fetch_repost` (`fetch_repost`),
+  KEY `desc` (`desc`(255))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE  `tjob`.`job_repost` (
@@ -66,3 +67,5 @@ CREATE TABLE  `tjob`.`user` (
   UNIQUE KEY `user_id_type` (`user_id`,`blogtype`) USING BTREE,
   KEY `created_at` (`created_at`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+grant all privileges on tjob.* to taojob@localhost identified by 'taojob123';
