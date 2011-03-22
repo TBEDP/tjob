@@ -1,5 +1,4 @@
-var os = require('os'),
-	dns = require('dns');
+var os = require('os');
 
 var debug = true;
 var port = module.exports.port = 8099;
@@ -11,17 +10,11 @@ var db_options = module.exports.db_options = {
 	database: 'tjob'
 };
 
-//if(debug) {
-//	dns.lookup(os.hostname(), function(err, address, family){
-//		module.exports.ip = address;
-//		module.exports.base_url = 'http://' + address;
-//	});
-//} else {
-//	var address = 'taojob.tbdata.org';
-//	module.exports.ip = address;
-//	module.exports.base_url = 'http://' + address;
-//}
 var address = 'taojob.tbdata.org';
+if(debug) {
+	// 请修改host文件
+	address = 'taojobtest.tbdata.org:' + port;
+}
 module.exports.ip = address;
 module.exports.base_url = 'http://' + address;
 

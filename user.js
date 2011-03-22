@@ -1,6 +1,7 @@
 // 处理用户认证相关逻辑
 var tapi = require('node-weibo'),
-	config = require('./config.js');
+	config = require('./config.js'),
+	utillib = require('./util.js');
 
 function _format_cookie_token_name(blogtype) {
 	return blogtype + '_token';
@@ -81,6 +82,7 @@ function get_users(app, user_ids, callback) {
 };
 
 function auth(app) {
+	var user_middleware = load_user_middleware(app);
 	app.get('/login/:blogtype', function(req, res) {
 		var blogtype = req.params.blogtype;
 		var user = {blogtype: blogtype};
@@ -161,26 +163,49 @@ function auth(app) {
 //		}
 	});
 	
-	app.get('/users', load_user_middleware(app), require_admin, function(req, res, next){
-		app.mysql_db.query('select * from user order by id desc', function(err, rows){
+	app.get('/users', user_middleware, require_admin, function(req, res, next){
+		var pagging = utillib.get_pagging(req, 20);
+		app.mysql_db.query('select id, screen_name, role, created_at, updated_at from user order by id desc limit ?, ?', 
+				[pagging.offset, pagging.count], function(err, rows){
 			if(err) {
 				next(err);
 			} else {
-				for(var i=0; i<rows.length; i++) {
-					var user = rows[i];
-					var t_user = JSON.parse(user.info);
-					delete t_user.id;
-					delete t_user.created_at;
-					Object.extend(user, t_user);
+				var locals = {
+					userlist: rows,
+					page_count: pagging.count,
+					prev_offset: pagging.prev_offset
+				};
+				if(rows.length == pagging.count) {
+					locals.next_offset = pagging.next_offset;
 				}
-				res.render('users.html', {
-					userlist: rows 
-				});
+				res.render('users.html', locals);
 			}
 		});
 	});
 	
-	app.post('/user/:id', load_user_middleware(app), require_admin, function(req, res, next){
+	app.get('/users/search', user_middleware, require_admin, function(req, res, next){
+		var query = req.query.username || '';
+		query = app.mysql_db.escape(query.replace(/\?/g, ''));
+		query = query.substring(1, query.length - 1).trim();
+		if(!query) {
+			res.redirect('/users');
+			return;
+		}
+		app.mysql_db.query('select id, screen_name, role, created_at, updated_at from user where screen_name like "%' + query + '%"', 
+				function(err, rows){
+			if(err) {
+				next(err);
+			} else {
+				var locals = {
+					userlist: rows,
+					username: query
+				};
+				res.render('users.html', locals);
+			}
+		});
+	});
+	
+	app.post('/user/:id', user_middleware, require_admin, function(req, res, next){
 		var role = req.body.role || 'user';
 		app.mysql_db.query('update user set role=? where id=?', [role, req.params.id], function(err, rows){
 			if(err) {

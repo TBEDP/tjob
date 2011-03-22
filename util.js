@@ -1,3 +1,5 @@
+var path = require('path'),
+	fs = require('fs');
 
 // 创建所有目录
 var mkdirs = module.exports.mkdirs = function(dirpath, mode, callback) {
@@ -28,7 +30,7 @@ module.exports.get_pagging = function(req, default_count) {
 	var count = req.query.c || default_count;
 	try{
 		count = parseInt(count);
-		if(count <= 0) {
+		if(count > 100 || count <= 0) { // 最大100
 			count = default_count;
 		}
 	}catch(e){

@@ -6,9 +6,8 @@
 	<meta name="keywords" content="" />
 	<meta name="description" content="" />
 	<link href="/css/default.css" rel="stylesheet" type="text/css" />
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script> 
-	<script>!window.jQuery && document.write('<script src="http://code.jquery.com/jquery-1.4.2.min.js"><\/script>');</script>
-    <script src="/js/util.js"></script>
+	<script src="/js/jquery-1.5.1.min.js"></script> 
+	<script src="/js/util.js"></script>
     <script src="/js/main.js"></script>
 </head>
 <body>
@@ -52,10 +51,14 @@
                                <img src="${users.tsina.profile_image_url}" />
                                <a id="current_user_link" href="${users.tsina.t_url}" target="_blank">@${users.tsina.screen_name}</a>
                                <input id="current_user_id" type="hidden" value="${users.tsina.user_id}" />
+                               
                            {{else}}
                                <a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
                            {{/if}}
                            </li>
+                           {{if users.tsina && users.tsina.is_admin }}
+			               <li><a href="/system_info">系统信息</a></li>
+			               {{/if}}
                            <!-- 
                            <li><a href="/login/twitter"><img src="/images/sign-in-with-twitter-d.png" /></a></li>
                            -->

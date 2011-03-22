@@ -11,19 +11,36 @@ $(document).ready(function(){
     });
 });
 </script>
+<form method="get" action="/users/search">
+<input type="text" name="username" value="${username}" />&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="submit" value=" 找人 " />
+</form>
+<br/>
 <table cellspacing="0">
   <tr>
     <th>ID</th>
     <th>姓名</th>
     <th>角色</th>
     <th>注册时间</th>
+    <th>上次登录</th>
   </tr>
   {{each(i, user) userlist}}
   <tr>
     <td>${user.id}</td>
-    <td><a href="${user.t_url}" target="_blank">@${user.screen_name}</a></td>
-    <td><input type="text" value="${user.role}" /> <input class="role_btn" type="button" value="保存" /></td>
+    <td><a href="http://t.sina.com.cn/n/${user.screen_name}" target="_blank">@${user.screen_name}</a></td>
+    <td><input type="text" value="${user.role}" /> 
+        <input class="role_btn" type="button" value="保存" /></td>
     <td>${user.created_at.format()}</td>
+    <td>${user.updated_at.format()}</td>
   </tr>
   {{/each}}
 </table>
+<p>
+    {{if typeof(prev_offset) == 'number' }}
+    <a href="/users?c=${page_count}">首页</a>
+    <a href="/users?o=${prev_offset}&c=${page_count}">上一页</a>
+    {{/if}}
+    {{if next_offset}}
+    <a href="/users?o=${next_offset}&c=${page_count}">下一页</a>
+    {{/if}}
+</p>

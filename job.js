@@ -287,28 +287,40 @@ function add(app) {
 	
 	// 获取实时更新
 	app.get('/job/:id/repost_users/:source_id', app.load_user_middleware, function(req, res, next){
-		if(req.users.tsina) {
-			tapi.repost_timeline({user: req.users.tsina, id: req.params.source_id}, function(data){
+		mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
+				[req.params.source_id], function(err, rows){
+			if(err) {
+				next(err);
+			} else {
 				var users = {};
-				data.forEach(function(status){
-					users[status.user.screen_name] = 1;
+				rows.forEach(function(row) {
+					users[row.screen_name] = 1;
 				});
 				res.send(JSON.stringify(users));
-			});
-		} else {
-			mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
-					[req.params.source_id], function(err, rows){
-				if(err) {
-					next(err);
-				} else {
-					var users = {};
-					rows.forEach(function(row) {
-						users[row.screen_name] = 1;
-					});
-					res.send(JSON.stringify(users));
-				}
-			});
-		}
+			}
+		});
+//		if(req.users.tsina) {
+//			tapi.repost_timeline({user: req.users.tsina, id: req.params.source_id}, function(data){
+//				var users = {};
+//				data.forEach(function(status){
+//					users[status.user.screen_name] = 1;
+//				});
+//				res.send(JSON.stringify(users));
+//			});
+//		} else {
+//			mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
+//					[req.params.source_id], function(err, rows){
+//				if(err) {
+//					next(err);
+//				} else {
+//					var users = {};
+//					rows.forEach(function(row) {
+//						users[row.screen_name] = 1;
+//					});
+//					res.send(JSON.stringify(users));
+//				}
+//			});
+//		}
 	});
 	
 	// 更新

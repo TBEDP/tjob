@@ -1,5 +1,7 @@
 // 招聘信息转发进程, 1分钟发送一次
 // 到job表 repost_id 为空的记录发送
+require.paths.push('/usr/lib/node/');
+
 var tapi = require('node-weibo'),
 	config = require('../config.js'),
 	tjob_user = config.tjob_user;
@@ -134,10 +136,18 @@ function job_total_count(callback) {
 							// 增加爬取任务
 						} else {
 							job.check_same_count++;
+							// 5次循环
+							if(job.check_same_count > 5) {
+								job.check_same_count = 0;
+							}
+							// 先尽快获取一次
+							if(job.check_same_count % 2 == 0) {
+								job.fetch_repost = 1;
+							}
 						}
 						// 最大30分钟间隔
 						sqls.push(sql.replace('{last_check}', 'DATE_ADD(now(), interval ' 
-								+ (Math.max(2 * (job.check_same_count + 1), 30)) + ' minute)'));
+								+ (Math.min(job.check_same_count + 1, 30)) + ' minute)'));
 						params = params.concat([job.check_same_count, job.fetch_repost, 
 						                        job.repost_count, job.comment_count, job.id]);
 					}

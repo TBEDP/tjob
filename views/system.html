@@ -1,0 +1,17 @@
+<h2>API的访问频率限制</h2>
+<table>
+  <tr>
+    <th>用户</th>
+    <th>微博类型</th>
+    <th>剩余数/总数(每小时请求限制)</th>
+    <th>重置时间</th>
+  </tr>
+  {{each(i, item) rate_limit_statuses}}
+  <tr>
+    <td>@${item.user.screen_name}</td>
+    <td>${item.user.blogtype}</td>
+    <td>${item.remaining_hits + ' / ' + item.hourly_limit}</td>
+    <td>${item.reset_time}</td>
+   </tr>
+  {{/each}}
+</table>

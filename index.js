@@ -1,5 +1,7 @@
 // tjob web
-var utillib = require('./util.js');
+// fixed node module paths problem;
+require.paths.push('/usr/lib/node/');
+
 var express = require('express'),
 	path = require('path'),
 	fs = require('fs'),
@@ -102,6 +104,16 @@ app.post('/tapi/counts', app.load_user_middleware, function(req, res){
 	}
 });
 
+app.get('/system_info', app.load_user_middleware, user.require_admin, function(req, res){
+	tapi.rate_limit_status({user: config.tjob_user}, function(data) {
+		data.user = config.tjob_user;
+		if(data.reset_time) {
+			data.reset_time = new Date(data.reset_time).format();
+		}
+		res.render('system.html', {rate_limit_statuses: [data]});
+	});
+});
+
 //app.get('/500', function(req, res){
 //	throw new Error('keyboard cat!');
 //});
@@ -110,3 +122,11 @@ job.add(app);
 
 app.listen(config.port);
 console.log('web server start', config.base_url);
+
+//catch all exception
+process.on('uncaughtException', function (err) {
+	var util = require('util');
+	console.error('Uncaught exception: ' + err);
+	console.error(err.message);
+	console.error(err.stack);
+});

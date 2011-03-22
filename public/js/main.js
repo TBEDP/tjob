@@ -3,6 +3,7 @@ $(document).ready(function(){
     $('#menu ul li a').each(function(){
         if($(this).attr('href') == pathname){
             $(this).parent().addClass('active');
+            return false;
         }
     });
     
