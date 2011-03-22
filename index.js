@@ -43,7 +43,7 @@ app.base_url = config.base_url;
 
 app.mysql_db = mysql_db;
 
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/public', {maxAge: 3600 * 24 * 7}));
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 
