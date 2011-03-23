@@ -7,9 +7,28 @@ $(document).ready(function(){
         $(this).hide();
     });
     
-    $('#resume').change(function(){
-        $(this).val() ? $('#upload_btn').show() : $('#upload_btn').hide();
-    });
+    // 检测是否可以提交数据
+    // 选择了文件，回答了问题，才可以提交
+    var _check_can_submit = function() {
+    	var can_submit = true;
+    	if(!$('#resume').val()) {
+    		can_submit = false;
+    	}
+    	if($('#answer').length == 1 && !$('#answer').val()) {
+    		can_submit = false;
+    	}
+    	can_submit ? $('#upload_btn').attr('disabled', false) 
+        	: $('#upload_btn').attr('disabled', true);
+    };
+    $('#resume').change(_check_can_submit);
+    // 需要回答问题
+    if($('#answer').length == 1) {
+    	$('textarea.simple_tinymce').tinymce($.extend({}, editor_options, {
+        	theme: 'simple',
+        	height: '250',
+        	onchange_callback: _check_can_submit
+        }));
+    }
     
     $('.close_job_btn').click(function(){
         if(confirm('确定要结束此招聘信息？')){

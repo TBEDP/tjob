@@ -3,11 +3,20 @@
 <div class="post">
     <div class="entry">
         <p>
-        投递职位: <a href="/job/${job.id}">${resume.job.title}</a> (目前有 ${job.resume_count} 人投递)<br />
+        投递职位: <a href="/job/${job.id}">${resume.job.title}</a> (目前有 ${resume.job.resume_count} 人投递)<br />
         查看简历: <a href="/download?p=${resume.filepath}">${resume.filename}</a><br />
         职位信息来源: <a href="http://t.sina.com.cn/n/${resume.introducer}" target="_blank">@${resume.introducer}</a><br />
         投递时间: ${resume.created_at.format('yyyy-MM-dd hh:mm:ss')}<br />
         状态: ${resume.status_name}
+        {{if resume.answer }}
+        <br />
+        问题: <br />
+        <div class="pre">{{html resume.answer.question.content}}
+        </div>
+        回答: <br />
+        <div class="pre">{{html resume.answer.content}}
+        </div>
+        {{/if}}
         </p>
     </div>
 </div>

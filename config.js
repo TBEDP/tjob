@@ -1,4 +1,5 @@
-var os = require('os');
+var os = require('os'),
+	path = require('path');
 
 var debug = true;
 var port = module.exports.port = 8099;
@@ -10,15 +11,7 @@ var db_options = module.exports.db_options = {
 	database: 'tjob'
 };
 
-var address = 'taojob.tbdata.org';
-if(debug) {
-	// 请修改host文件
-	address = 'taojobtest.tbdata.org:' + port;
-}
-module.exports.ip = address;
-module.exports.base_url = 'http://' + address;
-
-var tjob_user = module.exports.tjob_user = {
+module.exports.tjob_user = {
 	"id":"1989184342",
 	"screen_name":"淘job","name":"淘job",
 	"province":"33", "city":"1",
@@ -34,3 +27,18 @@ var tjob_user = module.exports.tjob_user = {
 	"authtype":"oauth",
 	"user_id":"tsina:1989184342"
 };
+
+var address = 'taojob.tbdata.org';
+if(debug) {
+	// 请修改host文件
+	address = 'taojobtest.tbdata.org:' + port;
+	module.exports.tjob_user = {
+		'screen_name': 'tjobtest',
+		'username': 'tjobtest@sina.cn',
+		'password': '123456'
+	};
+}
+module.exports.ip = address;
+module.exports.base_url = 'http://' + address;
+
+module.exports.filedir = path.join(__dirname, 'files');

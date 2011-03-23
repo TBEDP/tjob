@@ -3,10 +3,12 @@ var path = require('path'),
 	fs = require('fs'),
 	tapi = require('node-weibo'),
 	userutil = require('./user.js'),
-	utillib = require('./util.js');
+	utillib = require('./util.js'),
+	mysql_db = require('./db.js').mysql_db,
+	config = require('./config.js'),
+	question = require('./question.js');
 
-var filedir = path.join(__dirname, 'files');
-
+var filedir =config.filedir;
 
 // 简历状态：0未读；1已读 2接受 3拒绝
 var RESUME_STATUS = {
@@ -16,11 +18,11 @@ var RESUME_STATUS = {
 	3: '拒绝'
 };
 
-function get_jobs(app, condition, params, callback) {
+function get_jobs(condition, params, callback) {
 	if(!params) {
 		params = [];
 	}
-	app.mysql_db.query('select * from job ' + condition, params, function(err, result) {
+	mysql_db.query('select * from job ' + condition, params, function(err, result) {
 		if(!err) {
 			if(result.length > 0) {
 				var user_ids = [];
@@ -32,7 +34,7 @@ function get_jobs(app, condition, params, callback) {
 						result[i].weibo_info = {};
 					}
 				}
-				userutil.get_users(app, user_ids, function(users) {
+				userutil.get_users(user_ids, function(users) {
 					for(var i=0; i<result.length; i++) {
 						result[i].author = users[result[i].author_id];
 					}
@@ -48,17 +50,32 @@ function get_jobs(app, condition, params, callback) {
 	});
 };
 
+// 格式化微博正文
+var format_weibo_status = module.exports.format_weibo_status = function(params, job_id) {
+	var redirect_url = '/job/' + job_id;
+	// 使用当前登录用户发一条微博
+	var status = '招聘#' + params.title + '#: ' + params.desc;
+	if(status.length > 120) {
+		status = status.substring(0, 117) + '...';
+	}
+	status += ' ' + config.base_url + redirect_url;
+	// 微博meta数据，方便跟踪对应到职位相关信息
+	var annotations = JSON.stringify({job: job_id});
+	return {status: status, annotations: annotations};
+};
+
 function add(app) {
-	var mysql_db = app.mysql_db;
 	// 添加职位信息
-	app.get('/job/create', app.load_user_middleware, userutil.require_author, function(req, res, next) {
+	app.get('/job/create', userutil.load_user_middleware, userutil.require_author, 
+			function(req, res, next) {
 		if(req.query.job) {
-			mysql_db.query('select id, title, `desc`, `text`, author_id from job where id=?', [req.query.job], 
-					function(err, rows){
+			mysql_db.query('select id, title, `desc`, `text`, author_id from job where id=?', 
+					[req.query.job], function(err, rows){
 				if(err) {
 					next(err);
 				}
-				if(rows.length == 0 || rows[0].author_id != req.users.tsina.user_id) {
+				var user_id = req.users.tsina.user_id;
+				if(rows.length == 0 || rows[0].author_id != user_id) {
 					res.redirect('/');
 				} else {
 					res.render('job/create.html', {
@@ -74,9 +91,34 @@ function add(app) {
 			});
 		}
 	});
-
-	app.post('/job/create', app.load_user_middleware, userutil.require_author, function(req, res) {
+	
+	function _add_job(params, callback){
+		var _insert_job = function(args, cb){
+			var sql = 'insert into job set title=?, `desc`=?, `text`=?, author_id=?, created_at=now()', 
+				ps = [args.title, args.desc, args.text, args.author_id];
+			if(args.question_id) {
+				sql += ', question_id=?';
+				ps.push(args.question_id);
+			}
+			mysql_db.query(sql, ps, cb);
+		};
+		params.need_question = params.need_question == '1';
+		if(params.need_question) {
+			question.save_question({
+				content: params.question,
+				author: params.author_id
+			}, function(question_id){
+				params.question_id = question_id;
+				_insert_job(params, callback);
+			});
+		} else {
+			_insert_job(params, callback);
+		}
+	};
+	
+	app.post('/job/create', userutil.load_user_middleware, userutil.require_author, function(req, res) {
 		var params = req.body;
+		params.author_id = req.cookies.tsina_token;
 		if(params.id) {
 			// 更新
 			mysql_db.query('update job set title=?, `desc`=?, `text`=? where id=?',
@@ -86,32 +128,25 @@ function add(app) {
 				res.redirect(redirect_url);
 			});
 		} else { // 新增
-			mysql_db.query('insert into job set title=?, `desc`=?, `text`=?, author_id=?, created_at=now()',
-				[params.title, params.desc, params.text, req.cookies.tsina_token], 
-				function(err, r) {
-					if(r && r.insertId) {
-						var job_id = r.insertId;
-						var redirect_url = '/job/' + job_id;
-						// 使用当前登录用户发一条微博
-						var status = '招聘#' + params.title + '#: ' + params.desc;
-						if(status.length > 120) {
-							status = status.substring(0, 117) + '...';
-						}
-						status += ' ' + app.base_url + redirect_url;
-						// 微博meta数据，方便跟踪对应到职位相关信息
-						var annotations = JSON.stringify({job: job_id});
-						tapi.update({user: req.users.tsina, status: status, annotations: annotations}, function(data){
-							mysql_db.query('update job set weibo_id=?, weibo_info=?, last_check=now() where id=?', [data.id, JSON.stringify(data), job_id], function(err, result){
-								res.redirect(redirect_url);
-							});
+			_add_job(params, function(err, r) {
+				if(r && r.insertId) {
+					var job_id = r.insertId;
+					var redirect_url = '/job/' + job_id;
+					// 使用当前登录用户发一条微博
+					var data = format_weibo_status(params, job_id);
+					data.user = req.users.tsina;
+					tapi.update(data, function(data){
+						mysql_db.query('update job set weibo_id=?, weibo_info=?, last_check=now() where id=?', 
+								[data.id, JSON.stringify(data), job_id], function(err, result){
+							res.redirect(redirect_url);
 						});
-					}
+					});
 				}
-			);
+			});
 		}
 	});
 	
-	function _get_user(app, current_user, user_id, callback) {
+	function _get_user(current_user, user_id, callback) {
 		// 未登录用户，或者不是当前用户，或者不是职位发布人，都无法查看用户的简历
 		if(!current_user || (current_user.user_id != user_id && !current_user.is_author)) {
 			callback(null);
@@ -120,39 +155,44 @@ function add(app) {
 		if(current_user.user_id == user_id) {
 			callback(current_user);
 		} else {
-			userutil.get_users(app, [user_id], function(users){
+			userutil.get_users([user_id], function(users){
 				callback(users[user_id]);
 			});
 		}
 	};
 	
 	// 查看当前用户投递的简历
-	app.get('/resume/list/:user_id', app.load_user_middleware, function(req, res, next){
+	app.get('/resume/list/:user_id', userutil.load_user_middleware, function(req, res, next){
 		var user_id = req.params.user_id;
-		_get_user(app, req.users.tsina, user_id, function(resume_user){
+		_get_user(req.users.tsina, user_id, function(resume_user){
 			if(!resume_user) {
 				res.redirect('/');
 				return;
 			}
+			var locals =  {
+				title: '我的简历', 
+				resume_user: resume_user,
+				resumes: []
+			};
 			mysql_db.query('select * from job_resume where user_id=? order by id desc', 
 					[user_id], function(err, rows){
 				if(err) {
 					next(err);
 				} else {
 					if(rows.length == 0) {
-						res.render('job/my_resume.html', {
-							title: '我的简历', 
-							resume_user: resume_user,
-							resumes: []
-						});
+						res.render('job/my_resume.html', locals);
 						return;
 					}
-					var job_ids = [], qs = [];
+					var job_ids = [], qs = [], answer_ids = [];
 					rows.forEach(function(row){
 						job_ids.push(row.job_id);
+						if(row.answer_id) {
+							answer_ids.push(row.answer_id);
+						}
 						qs.push('?');
 					});
-					get_jobs(app, 'where id in (' + qs.join(',') + ')', job_ids, function(jobs){
+					utillib.waitfor([get_jobs, 'where id in (' + qs.join(',') + ')', 
+					                 job_ids, function(jobs){
 						var job_map = {};
 						jobs.forEach(function(job){
 							job_map[job.id] = job;
@@ -164,11 +204,17 @@ function add(app) {
 							row.status_name = RESUME_STATUS[row.status];
 							row.filename = path.basename(row.filepath);
 						});
-						res.render('job/my_resume.html', {
-							title: '我的简历', 
-							resume_user: resume_user,
-							resumes: rows
+					}], 
+					[question.get_answers, answer_ids, function(answers){
+						rows.forEach(function(row){
+							if(row.answer_id) {
+								row.answer = answers[row.answer_id];
+							}
 						});
+					}], 
+					function(){
+						locals.resumes = rows;
+						res.render('job/my_resume.html', locals);
 					});
 				}
 			});
@@ -183,6 +229,41 @@ function add(app) {
 			// do nothing.
 		});
 	});
+	
+	// 保存文件
+	function _save_file(from_path, to_path, callback) {
+		utillib.mkdirs(path.dirname(to_path), '777', function() {
+			fs.rename(from_path, to_path, callback);
+		});
+	};
+	
+	function _save_resume(params, callback){
+		var data = {
+			job_id: params.job_id,
+			user_id: params.user_id,
+			introducer: params.introducer,
+			filepath: params.filepath,
+			size: params.size,
+			created_at: mysql_db.literal('now()')
+		};
+		if(params.question_id && params.answer) {
+			var answer = {
+				content: params.answer,
+				author: params.user_id,
+				question_id: params.question_id
+			};
+			if(params.answer_id) {
+				// for update
+				answer.id = params.answer_id;
+			}
+			question.save_answer(answer, function(answer_id){
+				data.answer_id = answer_id;
+				mysql_db.insert_or_update('job_resume', data, ['created_at'], callback);
+			});
+		} else {
+			mysql_db.insert_or_update('job_resume', data, ['created_at'], callback);
+		}
+	};
 	
 	app.post('/resume/upload/:job_id', function(req, res, next){
 		// connect-form adds the req.form object
@@ -204,23 +285,28 @@ function add(app) {
 				var size = files.resume.size;
 				// jobid/userid/filename
 				var save_path = path.join(filedir, filepath);
-				var data = [job_id, user_id, introducer, filepath, size];
-				utillib.mkdirs(path.dirname(save_path), '777', function() {
-					fs.rename(files.resume.path, save_path, function() {
+				var params = {
+					job_id: job_id,
+					user_id: user_id,
+					introducer: introducer,
+					filepath: filepath,
+					size: size,
+					question_id: fields.question_id,
+					answer: fields.answer,
+					answer_id: fields.answer_id
+				};
+				_save_file(files.resume.path, save_path, function() {
+					_save_resume(params, function(err, result){
 						// job_id, user_id唯一，一个人对一个职位只能投递一份简历
-						mysql_db.query('insert into job_resume(job_id, user_id, introducer, filepath, `size`, created_at) values(?, ?, ?, ?, ?, now()) '
-								+ ' ON DUPLICATE KEY UPDATE `introducer`=values(`introducer`), filepath=values(filepath), `size`=values(`size`);', 
-								data, function(err, result){
-							if(err) {
-								next(err);
-							} else {
-								if(result.affectedRows == 1) { // insert
-									// 增加简历统计数目
-									mysql_db.query('update job set resume_count=resume_count+1 where id=?', [job_id]);
-								}
-								res.redirect('/resume/list/' + user_id);
+						if(err) {
+							next(err);
+						} else {
+							if(result.affectedRows == 1) { // insert
+								// 增加简历统计数目
+								mysql_db.query('update job set resume_count=resume_count+1 where id=?', [job_id]);
 							}
-						});
+							res.redirect('/resume/list/' + user_id);
+						}
 					});
 				});
 			}
@@ -235,33 +321,35 @@ function add(app) {
 	
 	function _get_resume(job_id, user_id, callback) {
 		if(user_id) {
-			mysql_db.query('select * from job_resume where job_id=? and user_id=?', [job_id, user_id],
-					function(err, rows){
-				if(err){
-					next(err);
+			mysql_db.get_obj('job_resume', {job_id: job_id, user_id: user_id}, 
+					function(resume){
+				if(resume) {
+					resume.filename = path.basename(resume.filepath);
+					question.get_answer(resume.answer_id, function(answer){
+						resume.answer = answer;
+						callback(resume);
+					});
 				} else {
-					var resume = null;
-					if(rows.length > 0) {
-						resume = rows[0];
-						resume.filename = path.basename(resume.filepath);
-					}
-					callback(resume);
+					callback(null);
 				}
 			});
 		} else {
 			callback(null);
 		}
 	};
-	app.get('/job/:id', app.load_user_middleware, function(req, res, next) {
+	
+	app.get('/job/:id', userutil.load_user_middleware, function(req, res, next) {
 		var job_id = req.params.id;
-		get_jobs(app, 'where id=?', [job_id], function(rows) {
-			if(rows.length > 0) {
+		var locals = {title: '职位信息'};
+		get_jobs('where id=?', [job_id], function(rows) {
+			if(rows.length == 1) {
+				var job = locals.job = rows[0];
 				// 如果用户已经登录，则判断用户是否提交过简历
 				_get_resume(job_id, req.cookies.tsina_token, function(resume){
-					res.render('job/detail.html', {
-						title: '职位信息', 
-						resume: resume,
-						job: rows[0]
+					locals.resume = resume;
+					question.get_question(job.question_id, function(question){
+						job.question = question;
+						res.render('job/detail.html', locals);
 					});
 				});
 			} else {
@@ -286,7 +374,7 @@ function add(app) {
 //	});
 	
 	// 获取实时更新
-	app.get('/job/:id/repost_users/:source_id', app.load_user_middleware, function(req, res, next){
+	app.get('/job/:id/repost_users/:source_id', userutil.load_user_middleware, function(req, res, next){
 		mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
 				[req.params.source_id], function(err, rows){
 			if(err) {
@@ -324,7 +412,7 @@ function add(app) {
 	});
 	
 	// 更新
-	app.post('/job/:id', app.load_user_middleware, userutil.require_author, function(req, res, next){
+	app.post('/job/:id', userutil.load_user_middleware, userutil.require_author, function(req, res, next){
 		var status = req.body.status || '0';
 //		if(status == '1') {
 //			// 结束，发一条评论
@@ -340,7 +428,7 @@ function add(app) {
 		});
 	});
 	
-	app.get('/resumes', app.load_user_middleware, userutil.require_author, function(req, res, next){
+	app.get('/resumes', userutil.load_user_middleware, userutil.require_author, function(req, res, next){
 		var status = req.query.status || '0'; // 默认未读
 		var params = [];
 		var sql = 'select * from job_resume';
@@ -385,8 +473,8 @@ function add(app) {
 					job_ids.push(row.job_id);
 					qs.push('?');
 				});
-				userutil.get_users(app, user_ids, function(users){
-					get_jobs(app, 'where id in (' + qs.join(',') + ')', job_ids, function(jobs){
+				userutil.get_users(user_ids, function(users){
+					get_jobs('where id in (' + qs.join(',') + ')', job_ids, function(jobs){
 						var job_map = {};
 						jobs.forEach(function(job){
 							job_map[job.id] = job;
@@ -405,7 +493,7 @@ function add(app) {
 		});
 	});
 	
-	app.post('/resumes/update/:id', app.load_user_middleware, userutil.require_author, function(req, res, next){
+	app.post('/resumes/update/:id', userutil.load_user_middleware, userutil.require_author, function(req, res, next){
 		var status = req.body.status;
 		mysql_db.query('update job_resume set status=? where id=?', [status, req.params.id], 
 				function(err, result){
@@ -443,7 +531,7 @@ function add(app) {
 			query = mysql_db.escape(query.replace(/\?/g, ''));
 			query = query.substring(1, query.length - 1); // remove '
 //			console.log('where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query));
-			get_jobs(app, 'where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query), [], function(rows){
+			get_jobs('where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query), [], function(rows){
 				locals.jobs = rows;
 				res.render('index.html', locals);
 			});

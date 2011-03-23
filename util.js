@@ -52,3 +52,48 @@ module.exports.get_pagging = function(req, default_count) {
 		prev_offset: prev_offset
 	};
 };
+
+/*
+ * 并发调用多个方法，当最后一个方法完成callback后，将调用finished_callback
+ * 参数: ([function1, arg1, arg2, callback1], function2, ..., finished_callback)
+ * waitfor([foo, hello, function(s){console.log(s)}], [bar, world, function(){}], function(){done.});
+ */
+var waitfor = module.exports.waitfor = function(){
+	var wait_count = arguments.length - 1;
+	var len = wait_count;
+	var finished_callback = arguments[wait_count];
+	var items = [];
+	for(var i=0;i<len;i++) {
+		items.push(arguments[i]);
+	}
+	items.forEach(function(args){
+//		console.log(args)
+		var f = args[0], params = args.slice(1, args.length - 1), cb = args[args.length - 1];
+		params.push(function(){
+			cb.apply(this, arguments);
+			wait_count--;
+			if(wait_count == 0) {
+				finished_callback();
+			}
+		});
+		f.apply(this, params);
+	});
+};
+
+//function foo(a, b, cb) {
+//	console.log('foo call', arguments);
+//	cb(a + b);
+//}
+//
+//function bar(s, cb) {
+//	console.log('bar call', arguments);
+//	cb(s + ' world');
+//}
+//
+//waitfor([foo, 1, 2, function(result){
+//	console.log('foo done', result);
+//}], [bar, 'hello', function(result){
+//	console.log('bar done', result);
+//}], function(){
+//	console.log('wait for done');
+//});

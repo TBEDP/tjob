@@ -376,3 +376,13 @@ table td {
 a img {
     border: 0;
 }
+
+div.pre {
+	margin: 0 0 5px 10px;
+    border: 1px solid #C1DAD7;
+    padding: 5px 5px 0 5px;
+}
+
+input.long {
+    width: 350px;
+}

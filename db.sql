@@ -27,6 +27,7 @@ CREATE TABLE  `tjob`.`job` (
   KEY `desc` (`desc`(255))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
 CREATE TABLE  `tjob`.`job_repost` (
   `id` varchar(50) NOT NULL,
   `source_id` varchar(50) NOT NULL,
@@ -68,4 +69,32 @@ CREATE TABLE  `tjob`.`user` (
   KEY `created_at` (`created_at`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-grant all privileges on tjob.* to taojob@localhost identified by 'taojob123';
+-- grant all privileges on tjob.* to taojob@localhost identified by 'xxx';
+
+-- update sql
+
+ALTER TABLE `tjob`.`job` ADD COLUMN `question_id` int  COMMENT '问答id，如果没有问题，则为空' AFTER `repost_id`;
+
+ALTER TABLE `tjob`.`job_resume` ADD COLUMN `answer_id` int;
+
+
+CREATE TABLE `tjob`.`question` (
+  `id` int  NOT NULL AUTO_INCREMENT,
+  `category` varchar(50),
+  `content` LONGTEXT ,
+  `author` varchar(50)  COMMENT '问题创建人',
+  `updated_at` timestamp,
+  PRIMARY KEY (`id`)
+)
+ENGINE = InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `tjob`.`answer` (
+  `id` int  NOT NULL AUTO_INCREMENT,
+  `question_id` int, 
+  `content` LONGTEXT ,
+  `score` int default null COMMENT '默认未评分的为空', 
+  `author` varchar(50)  COMMENT '问题创建人',
+  `updated_at` timestamp,
+  PRIMARY KEY (`id`)
+)
+ENGINE = InnoDB DEFAULT CHARSET=utf8;

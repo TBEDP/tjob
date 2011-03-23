@@ -8,7 +8,7 @@ var express = require('express'),
 	form = require('connect-form'),
 	tapi = require('node-weibo'),
 	utillib = require('./util.js');
-	user = require('./user.js'),
+	userutil = require('./user.js'),
 	config = require('./config.js'),
 	job = require('./job.js');
 
@@ -32,18 +32,15 @@ require('http').ServerResponse.prototype.download = function(path, filename, fn)
 	});
 };
 
-var mysql_db = require('./db.js').mysql_db;
+//var mysql_db = require('./db.js').mysql_db;
 
 
 var app = express.createServer(
 	form({ keepExtensions: true })
 );
 
-app.base_url = config.base_url;
-
-app.mysql_db = mysql_db;
-
-app.use(express.static(__dirname + '/public', {maxAge: 3600 * 24 * 7}));
+// 一个月过期
+app.use(express.static(__dirname + '/public', {maxAge: 3600000 * 24 * 30}));
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 
@@ -71,13 +68,11 @@ app.set('view options', {
 app.register(".html", require("jqtpl"));
 
 // 用户认证
-user.auth(app);
+userutil.auth(app);
 
-app.load_user_middleware = user.load_user_middleware(app);
-
-app.get('/', app.load_user_middleware, function(req, res){
+app.get('/', userutil.load_user_middleware, function(req, res){
 	var pagging = utillib.get_pagging(req);
-	job.get_jobs(app, 'where status=0 order by id desc limit ?, ?', [pagging.offset, pagging.count], function(rows) {
+	job.get_jobs('where status=0 order by id desc limit ?, ?', [pagging.offset, pagging.count], function(rows) {
 		var locals = {
 			jobs: rows,
 			page_count: pagging.count,
@@ -90,7 +85,7 @@ app.get('/', app.load_user_middleware, function(req, res){
 	});
 });
 
-app.post('/tapi/counts', app.load_user_middleware, function(req, res){
+app.post('/tapi/counts', userutil.load_user_middleware, function(req, res){
 	if(req.users.tsina) {
 		tapi.counts({user: req.users.tsina, ids: req.body.ids}, function(data) {
 			var counts = [];
@@ -104,7 +99,7 @@ app.post('/tapi/counts', app.load_user_middleware, function(req, res){
 	}
 });
 
-app.get('/system_info', app.load_user_middleware, user.require_admin, function(req, res){
+app.get('/system_info', userutil.load_user_middleware, userutil.require_admin, function(req, res){
 	tapi.rate_limit_status({user: config.tjob_user}, function(data) {
 		data.user = config.tjob_user;
 		if(data.reset_time) {

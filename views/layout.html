@@ -21,14 +21,13 @@
             <ul>
                 <li><a href="/">职位列表</a></li>
                 {{if users && users.tsina}}
-                <li><a href="/resume/list/${users.tsina.user_id}">我的简历</a></li>
-                {{if users.tsina.is_author }}
-                <li><a href="/resumes">查看简历</a></li>
-                <li><a href="/job/create">发布职位信息</a></li>
-                {{/if}}
-                {{if users.tsina.is_admin }}
-                <li><a href="/users">用户管理</a></li>
-                {{/if}}
+                    {{if !users.tsina.is_author && !users.tsina.is_admin }}
+                    <li><a href="/resume/list/${users.tsina.user_id}">我的简历</a></li>
+                    {{/if}}
+	                {{if users.tsina.is_author }}
+	                <li><a href="/resumes">查看简历</a></li>
+	                <li><a href="/job/create">发布职位信息</a></li>
+	                {{/if}}
                 {{/if}}
             </ul>
         </div>
@@ -58,6 +57,7 @@
                            </li>
                            {{if users.tsina && users.tsina.is_admin }}
 			               <li><a href="/system_info">系统信息</a></li>
+			               <li><a href="/users">用户管理</a></li>
 			               {{/if}}
                            <!-- 
                            <li><a href="/login/twitter"><img src="/images/sign-in-with-twitter-d.png" /></a></li>

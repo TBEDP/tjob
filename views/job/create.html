@@ -12,27 +12,56 @@ $(document).ready(function(){
         $('#wordcount').html(140 - $('#weibo_preview').html().length);
     });
     $('#desc, #title').keyup(function(){
-        $('#save_job_btn').show();
+        $('#save_job_btn').attr('disabled', false);
         $('#desc, #title').each(function(){
             if(!$(this).val()) {
-                $('#save_job_btn').hide();
+                $('#save_job_btn').attr('disabled', true);
             }
         });
     }).keyup();
+    
+    $('#add_question_btn').click(function(){
+        $('#addition_question').toggle();
+        var need_question = $('#need_question').val();
+        $('#need_question').val(need_question == '0' ? '1' : '0')
+    });
+    
+    $('#video_text').keyup(function(){
+        $('#add_video_btn').attr('disabled', !$(this).val());
+    });
+    $('#add_video_btn').click(function(){
+        var html = VideoService.attempt($('#video_text').val());
+        if(html) {
+            $('#text').val($('#text').val() + html);
+        }
+    });
 });
 </script>
 <form method="post" action="/job/create">
-<h3>微博预览 (剩余 <span id="wordcount">140</span>)</h3>
-<p id="weibo_preview"></p>
-<h3>职位名称</h3>
-<input type="text" name="title" id="title" style="width: 100%;" value="${job.title}"  />
-<h3>职位概要，请确保微博在140字以内，用于发布微博内容</h3>
-<textarea rows="5" name="desc" id="desc" style="width: 100%;">${job.desc}</textarea>
-<h3>职位详细描述及要求</h3>
-<textarea class="tinymce" name="text" id="text" >${job.text}</textarea>
-{{if job.id}}
-<input type="hidden" name="id" value="${job.id}" />
-{{/if}}
-<br/>
-<input style="display:none;" id="save_job_btn" type="submit" value="{{if job.id}}更新{{else}}发布{{/if}}信息" />
+	<h3>微博预览 (剩余 <span id="wordcount">140</span>)</h3>
+	<p id="weibo_preview"></p>
+	<h3>职位名称</h3>
+	<input type="text" name="title" id="title" style="width: 100%;" value="${job.title}"  />
+	<h3>职位概要，请确保微博在140字以内，用于发布微博内容</h3>
+	<textarea rows="5" name="desc" id="desc" style="width: 100%;">${job.desc}</textarea>
+	<h3>职位详细描述及要求</h3>
+	<textarea class="tinymce" name="text" id="text" >${job.text}</textarea>
+	<br />
+	<label>视频URL: </label>
+	<input type="text" class="long" id="video_text" />&nbsp;&nbsp;
+	<input type="button" id="add_video_btn" disabled="disabled" value="添加视频" />
+	<br />
+	{{if job.id}}
+	<input type="hidden" name="id" value="${job.id}" />
+	{{/if}}
+	<div id="addition_question" style="display:none;">
+		<h3>附加问题</h3>
+		<textarea class="tinymce" name="question" id="question"></textarea>
+		<input type="hidden" id="need_question" name="need_question" value="0" />
+	</div>
+	<br />
+	<input disabled="disabled" id="save_job_btn" 
+        type="submit" value="{{if job.id}}更新{{else}}发布{{/if}}招聘信息" />
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type="button" id="add_question_btn" value="附加问题" />
 </form>

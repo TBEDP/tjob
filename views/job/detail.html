@@ -1,3 +1,5 @@
+<script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
+<script type="text/javascript" src="/js/editor.js"></script>
 <script type="text/javascript" src="/js/job_detail.js"></script>
 <input type="hidden" id="job_id" value="${job.id}" />
 <input type="hidden" id="job_weibo_id" value="${job.weibo_id}" />
@@ -8,6 +10,10 @@
     {{/if}}
     <div class="entry">
         <p>{{html job.text}}</p>
+        {{if job.question}}
+        <h3>附加题目</h3>
+        <p>{{html job.question.content}}</p>
+        {{/if}}
         <p id="repost_users"></p>
     </div>
     <div class="meta">
@@ -50,10 +56,19 @@
                 <label for="introducer">招聘信息来源(从谁的微博知道此信息的?):</label><br/>
                 <!-- <input type="text" id="introducer" name="introducer" size="50" /><br/><br/>  -->
                 <p id="introducer_selector"></p>
+                {{if job.question}}
+		        <label for="answer">回答附加题目:</label><br/>
+		        <input type="hidden" name="question_id" value="${job.question.id}" />
+			        {{if resume && resume.answer }}
+			        <input type="hidden" name="answer_id" value="${resume.answer.id}" />
+			        {{/if}}
+		        <textarea class="simple_tinymce" name="answer" id="answer">${resume && resume.answer ?resume.answer.content:''}</textarea>
+		        <br/>
+		        {{/if}}
                 <label for="resume">选择的要上传的简历：</label><br/>
                 <input id="resume" name="resume" type="file" accept="png,gif,jpg,jpeg,doc,docx,pdf,txt,wps,ini" />
                 <br/><br/>
-                <input id="upload_btn" style="display:none;" type="submit" value=" 提交简历 " /> 
+                <input id="upload_btn" disabled="disabled" type="submit" value=" 提交简历 " /> 
             </form>
             {{else}}
             <p>
