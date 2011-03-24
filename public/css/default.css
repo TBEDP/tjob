@@ -16,7 +16,7 @@ body {
 	text-align: justify;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 12px;
-	color: #757E82;
+	/* color: #757E82; */
 }
 
 h1, h2, h3 {
@@ -225,6 +225,10 @@ a:hover {
 	color: #FFFFFF;
 }
 
+.post .title a:hover {
+	text-decoration: underline;
+}
+
 .post .entry {
 }
 
@@ -385,4 +389,17 @@ div.pre {
 
 input.long {
     width: 350px;
+}
+
+a.like_button, a.big_button {
+	padding: 4px;
+    font-size: 15px;
+    background: #EF8116;
+    color: white;
+    text-decoration: none;
+}
+
+a.like_button:hover, a.big_button:hover {
+    color: white;
+    text-decoration: underline;
 }

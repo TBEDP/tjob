@@ -50,7 +50,7 @@ Client.prototype.insert_or_update = function(table, data, not_updates, callback)
 		not_updates = null;
 	}
 	not_updates = not_updates || [];
-	var sql = 'insert into ' + table + ' set ';
+	var sql = table + ' set ';
 	var update_sql = '';
 	var params = [];
 	for(var k in data) {
@@ -62,9 +62,9 @@ Client.prototype.insert_or_update = function(table, data, not_updates, callback)
 	}
 	sql = sql.substring(0, sql.length - 1);
 	if(update_sql) {
-		sql += ' ON DUPLICATE KEY UPDATE ' + update_sql.substring(0, update_sql.length - 1);
+		sql = 'INSERT INTO ' + sql + ' ON DUPLICATE KEY UPDATE ' + update_sql.substring(0, update_sql.length - 1);
 	} else {
-		sql += ' ON DUPLICATE KEY UPDATE 1=1';
+		sql += 'INSERT IGNORE INTO ' + sql;
 	}
 	this.query(sql, params, callback);
 };
@@ -76,8 +76,6 @@ Client.prototype.get_obj = function(table, key_values, callback) {
 		conditions.push('`' + k + '`=?');
 		params.push(key_values[k]);
 	}
-//	console.log('select * from ' + table + ' where ' 
-//			+ conditions.join(' and '), params)
 	mysql_db.query('select * from ' + table + ' where ' 
 			+ conditions.join(' and '), params, 
 			function(err, rows){

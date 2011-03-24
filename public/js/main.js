@@ -32,4 +32,31 @@ $(document).ready(function(){
     		$hot_jobs.append('<li><a href="/job/{{id}}">{{title}}</a></li>'.format(job));
     	});
     });
+    
+    // 我喜欢按钮
+    $('.like_button').click(function(){
+    	if(current_user_id) {
+    		var $this = $(this);
+    		var job_id = $this.attr('jobid');
+    		var like_count = $this.find('span:last').text() || '0';
+    		if($this.hasClass('unlike')) {
+    			$.get('/job/unlike/' + job_id, function(data){
+        			like_count = parseInt(like_count) - 1;
+        			$this.find('span:last').html(like_count);
+        			$this.removeClass('unlike');
+        			$this.find('span:first').html('Like');
+        		});
+    		} else {
+    			$.get('/job/like/' + job_id, function(data){
+        			like_count = parseInt(like_count) + 1;
+        			$this.find('span:last').html(like_count);
+        			$this.addClass('unlike');
+        			$this.find('span:first').html('Unlike');
+        		});
+    		}
+    		
+    	} else {
+    		alert('请先登录.');
+    	}
+    });
 });

@@ -7,10 +7,10 @@ var express = require('express'),
 	fs = require('fs'),
 	form = require('connect-form'),
 	tapi = require('node-weibo'),
-	utillib = require('./util.js');
+	utillib = require('./public/js/util.js'),
 	userutil = require('./user.js'),
 	config = require('./config.js'),
-	job = require('./job.js');
+	jobutil = require('./job.js');
 
 //fixed express download cancel bug:
 require('http').ServerResponse.prototype.download = function(path, filename, fn){
@@ -31,9 +31,6 @@ require('http').ServerResponse.prototype.download = function(path, filename, fn)
 	    }
 	});
 };
-
-//var mysql_db = require('./db.js').mysql_db;
-
 
 var app = express.createServer(
 	form({ keepExtensions: true })
@@ -72,7 +69,7 @@ userutil.auth(app);
 
 app.get('/', userutil.load_user_middleware, function(req, res){
 	var pagging = utillib.get_pagging(req);
-	job.get_jobs('where status=0 order by id desc limit ?, ?', [pagging.offset, pagging.count], function(rows) {
+	jobutil.get_jobs('where status=0 order by id desc limit ?, ?', [pagging.offset, pagging.count], function(rows) {
 		var locals = {
 			jobs: rows,
 			page_count: pagging.count,
@@ -81,7 +78,22 @@ app.get('/', userutil.load_user_middleware, function(req, res){
 		if(rows.length == pagging.count) {
 			locals.next_offset = pagging.next_offset;
 		}
-		res.render('index.html', locals);
+		if(req.users.tsina && rows.length > 0) {
+			// 判断当前用户是否喜欢
+			var job_ids = [];
+			rows.forEach(function(row) {
+				job_ids.push(row.id);
+			});
+			jobutil.check_likes(req.users.tsina.user_id, job_ids, function(likes){
+				rows.forEach(function(row) {
+					row.user_like = likes[row.id];
+				});
+				res.render('index.html', locals);
+			});
+		} else {
+			res.render('index.html', locals);
+		}
+		
 	});
 });
 
@@ -113,7 +125,7 @@ app.get('/system_info', userutil.load_user_middleware, userutil.require_admin, f
 //	throw new Error('keyboard cat!');
 //});
 
-job.add(app);
+jobutil.add(app);
 
 app.listen(config.port);
 console.log('web server start', config.base_url);

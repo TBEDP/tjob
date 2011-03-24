@@ -77,24 +77,44 @@ ALTER TABLE `tjob`.`job` ADD COLUMN `question_id` int  COMMENT '问答id，如�
 
 ALTER TABLE `tjob`.`job_resume` ADD COLUMN `answer_id` int;
 
+ALTER TABLE `tjob`.`job_resume` MODIFY COLUMN `introducer` VARCHAR(50)  CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '职位介绍人',
+ MODIFY COLUMN `filepath` VARCHAR(1000)  CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+ MODIFY COLUMN `size` INTEGER UNSIGNED DEFAULT NULL,
+ ADD COLUMN `comment` longtext  COMMENT '反馈' AFTER `answer_id`;
 
-CREATE TABLE `tjob`.`question` (
-  `id` int  NOT NULL AUTO_INCREMENT,
-  `category` varchar(50),
-  `content` LONGTEXT ,
-  `author` varchar(50)  COMMENT '问题创建人',
+
+CREATE TABLE  `tjob`.`question` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `category` varchar(50) DEFAULT NULL COMMENT '问题类别\n',
+  `content` longtext,
+  `author` varchar(50) CHARACTER SET latin1 DEFAULT NULL COMMENT '问题创建人',
   `updated_at` timestamp,
   PRIMARY KEY (`id`)
-)
-ENGINE = InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `tjob`.`answer` (
-  `id` int  NOT NULL AUTO_INCREMENT,
-  `question_id` int, 
-  `content` LONGTEXT ,
-  `score` int default null COMMENT '默认未评分的为空', 
-  `author` varchar(50)  COMMENT '问题创建人',
+CREATE TABLE  `tjob`.`answer` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `question_id` int(11) DEFAULT NULL,
+  `content` longtext,
+  `score` int(11) DEFAULT NULL COMMENT '默认未评分的为空',
+  `author` varchar(50) DEFAULT NULL COMMENT '问题创建人',
   `updated_at` timestamp,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- 3.24
+
+ALTER TABLE `tjob`.`job` ADD COLUMN `like_count` int UNSIGNED DEFAULT 0 AFTER `resume_count`;
+
+CREATE TABLE `tjob`.`job_like` (
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `job_id` int UNSIGNED,
+  `user_id` varchar(50) ,
+  `created_at` timestamp ,
+  PRIMARY KEY (`id`),
+  unique INDEX `job_user`(`job_id`, `user_id`)
 )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE `tjob`.`job_like` ADD INDEX `jobid`(`job_id`),
+ ADD INDEX `user_id`(`user_id`);

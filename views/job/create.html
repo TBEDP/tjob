@@ -30,7 +30,7 @@ $(document).ready(function(){
         $('#add_video_btn').attr('disabled', !$(this).val());
     });
     $('#add_video_btn').click(function(){
-        var html = VideoService.attempt($('#video_text').val());
+        var html = util.VideoService.attempt($('#video_text').val());
         if(html) {
             $('#text').val($('#text').val() + html);
         }
@@ -54,14 +54,7 @@ $(document).ready(function(){
 	{{if job.id}}
 	<input type="hidden" name="id" value="${job.id}" />
 	{{/if}}
-	<div id="addition_question" style="display:none;">
-		<h3>附加问题</h3>
-		<textarea class="tinymce" name="question" id="question"></textarea>
-		<input type="hidden" id="need_question" name="need_question" value="0" />
-	</div>
 	<br />
 	<input disabled="disabled" id="save_job_btn" 
         type="submit" value="{{if job.id}}更新{{else}}发布{{/if}}招聘信息" />
-	&nbsp;&nbsp;&nbsp;&nbsp;
-	<input type="button" id="add_question_btn" value="附加问题" />
 </form>

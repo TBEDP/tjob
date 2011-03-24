@@ -22,10 +22,10 @@ $(document).ready(function(){
     };
     $('#resume').change(_check_can_submit);
     // 需要回答问题
-    if($('#answer').length == 1) {
+    if($('#answer, #comment').length > 0) {
     	$('textarea.simple_tinymce').tinymce($.extend({}, editor_options, {
         	theme: 'simple',
-        	height: '250',
+        	height: '200',
         	onchange_callback: _check_can_submit
         }));
     }
@@ -43,7 +43,7 @@ $(document).ready(function(){
 	var job_id = $('#job_id').val(), weibo_id = $('#job_weibo_id').val();
     // 获取转发人列表
     $.getJSON('/job/' + job_id + '/repost_users/' + weibo_id, function(users){
-    	if(get_dict_length(users) > 0) {
+    	if(util.get_dict_length(users) > 0) {
     		$('#repost_users').append('转发者: ');
     		for(var screen_name in users){
             	var item = {

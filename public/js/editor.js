@@ -9,7 +9,7 @@ var editor_options = {
     plugins : "pagebreak,layer,table,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,advlist",
 
     // Theme options
-    theme_advanced_buttons1: 'forecolor,backcolor,fontselect,fontsizeselect,bold,italic,underline,strikethrough,|,undo,redo,|,cut,copy,paste,pastetext,pasteword,|,code',
+    theme_advanced_buttons1: 'forecolor,backcolor,fontselect,fontsizeselect,bold,italic,underline,strikethrough,|,undo,redo,|,paste,pastetext,pasteword,|,code,image',
     theme_advanced_buttons2: '',
     theme_advanced_buttons3: '',
     theme_advanced_buttons4: '',

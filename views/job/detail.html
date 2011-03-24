@@ -6,7 +6,7 @@
 <div class="post">
     <h2 class="title" id="job_${job.weibo_id}"><a href="/job/${job.id}">${job.title}</a></h2>
     {{if job.author}}
-    <p class="byline">由 <a id="author_link" href="${job.author.t_url}" target="_blank">@${job.author.screen_name}</a> 发布</p>
+    <p class="byline">由 <a id="author_link" href="http://t.sina.com.cn/n/${job.author.screen_name}" target="_blank">@${job.author.screen_name}</a> 发布</p>
     {{/if}}
     <div class="entry">
         <p>{{html job.text}}</p>
@@ -30,7 +30,9 @@
             |
             &nbsp;&nbsp;
             {{/if}}
-            <a href="/job/${job.id}#resume" class="resume_count">投递简历(${job.resume_count})</a>
+            <a href="javascript:void(0);" title="${job.like_count || 0}人喜欢" jobid="${job.id}" class="like_button ${job.user_like ? 'unlike' : ''}"><span>${job.user_like ? 'Unlike' : 'Like'}</span>(<span>${job.like_count || 0}</span>)</a>
+            &nbsp;&nbsp;
+            <a href="/job/${job.id}#resume" title="${job.resume_count || 0}人投递" class="resume_count big_button">投递简历(<span>${job.resume_count}</span>)</a>
             &nbsp;&nbsp;
             <a href="${job.weibo_info.t_url}" target="_blank" class="repost_count">转发(<span>${job.repost_count}</span>)</a>
             &nbsp;&nbsp;
@@ -39,7 +41,7 @@
     </div>
     <div>
         <a name="resume" href="#resume"></a>
-        <h3>投递简历</h3>
+        <h2>投递简历</h2>
         {{if job.status == 0}}
             {{if users.tsina}}
                 {{if resume}}
@@ -53,11 +55,11 @@
                 </p>
                 {{/if}}
             <form id="upload_resume_form" {{if resume}}style="display:none;"{{/if}} method="post" action="/resume/upload/${job.id}" enctype="multipart/form-data">
-                <label for="introducer">招聘信息来源(从谁的微博知道此信息的?):</label><br/>
+                <h3>招聘信息来源(从谁的微博知道此信息的?):</h3>
                 <!-- <input type="text" id="introducer" name="introducer" size="50" /><br/><br/>  -->
                 <p id="introducer_selector"></p>
                 {{if job.question}}
-		        <label for="answer">回答附加题目:</label><br/>
+		        <h3>回答附加题目:</h3>
 		        <input type="hidden" name="question_id" value="${job.question.id}" />
 			        {{if resume && resume.answer }}
 			        <input type="hidden" name="answer_id" value="${resume.answer.id}" />
@@ -65,7 +67,10 @@
 		        <textarea class="simple_tinymce" name="answer" id="answer">${resume && resume.answer ?resume.answer.content:''}</textarea>
 		        <br/>
 		        {{/if}}
-                <label for="resume">选择的要上传的简历：</label><br/>
+		        <h3>我想说说(对此职位的想法或者回答问题):</h3>
+		        <textarea class="simple_tinymce" name="comment" id="comment">${resume && resume.comment}</textarea>
+                <br/>
+                <h3>选择的要上传的简历：(简历不会对外公布)</h3>
                 <input id="resume" name="resume" type="file" accept="png,gif,jpg,jpeg,doc,docx,pdf,txt,wps,ini" />
                 <br/><br/>
                 <input id="upload_btn" disabled="disabled" type="submit" value=" 提交简历 " /> 

@@ -3,10 +3,10 @@ var path = require('path'),
 	fs = require('fs'),
 	tapi = require('node-weibo'),
 	userutil = require('./user.js'),
-	utillib = require('./util.js'),
+	utillib = require('./public/js/util.js'),
 	mysql_db = require('./db.js').mysql_db,
 	config = require('./config.js'),
-	question = require('./question.js');
+	question_answer = require('./question.js');
 
 var filedir =config.filedir;
 
@@ -16,6 +16,25 @@ var RESUME_STATUS = {
 	1: '已读',
 	2: '接受',
 	3: '拒绝'
+};
+
+// 获取job详细信息，包含问题等
+var get_job = module.exports.get_job = function(id, callback) {
+	if(!id) {
+		callback(null);
+	} else {
+		mysql_db.get_obj('job', {id: id}, function(job){
+			if(job) {
+				// 获取用户
+				userutil.get_user(job.author_id, function(author) {
+					job.author = author;
+					callback(job);
+				});
+			} else {
+				callback(job);
+			}
+		});
+	}
 };
 
 function get_jobs(condition, params, callback) {
@@ -50,6 +69,30 @@ function get_jobs(condition, params, callback) {
 	});
 };
 
+// 检测用户是否喜欢这些job
+var check_likes = module.exports.check_likes = function(user_id, job_ids, callback) {
+	var likes = {};
+	if(!user_id || !job_ids || 0 == job_ids.length) {
+		callback(likes);
+	} else {
+		var qs = [];
+		job_ids.forEach(function(){
+			qs.push('?');
+		});
+		mysql_db.query('select job_id from job_like where job_id in (' 
+				+ qs.join(',') + ') and user_id=?',
+				job_ids.concat(user_id), function(err, rows){
+			if(err) {
+				console.error(err);
+			}
+			rows.forEach(function(row){
+				likes[row.job_id] = true;
+			});
+			callback(likes);
+		});
+	}
+};
+
 // 格式化微博正文
 var format_weibo_status = module.exports.format_weibo_status = function(params, job_id) {
 	var redirect_url = '/job/' + job_id;
@@ -69,18 +112,14 @@ function add(app) {
 	app.get('/job/create', userutil.load_user_middleware, userutil.require_author, 
 			function(req, res, next) {
 		if(req.query.job) {
-			mysql_db.query('select id, title, `desc`, `text`, author_id from job where id=?', 
-					[req.query.job], function(err, rows){
-				if(err) {
-					next(err);
-				}
+			get_job(req.query.job, function(job){
 				var user_id = req.users.tsina.user_id;
-				if(rows.length == 0 || rows[0].author_id != user_id) {
+				if(!job || job.author_id != user_id) {
 					res.redirect('/');
 				} else {
 					res.render('job/create.html', {
 						title: '更新职位信息',
-						job: rows[0]
+						job: job
 					});
 				}
 			});
@@ -92,19 +131,20 @@ function add(app) {
 		}
 	});
 	
-	function _add_job(params, callback){
-		var _insert_job = function(args, cb){
+	function _insert_job(args, cb){
 			var sql = 'insert into job set title=?, `desc`=?, `text`=?, author_id=?, created_at=now()', 
-				ps = [args.title, args.desc, args.text, args.author_id];
-			if(args.question_id) {
-				sql += ', question_id=?';
-				ps.push(args.question_id);
-			}
-			mysql_db.query(sql, ps, cb);
-		};
+			ps = [args.title, args.desc, args.text, args.author_id];
+		if(args.question_id) {
+			sql += ', question_id=?';
+			ps.push(args.question_id);
+		}
+		mysql_db.query(sql, ps, cb);
+	};
+	
+	function _add_job(params, callback){
 		params.need_question = params.need_question == '1';
 		if(params.need_question) {
-			question.save_question({
+			question_answer.save_question({
 				content: params.question,
 				author: params.author_id
 			}, function(question_id){
@@ -205,7 +245,7 @@ function add(app) {
 							row.filename = path.basename(row.filepath);
 						});
 					}], 
-					[question.get_answers, answer_ids, function(answers){
+					[question_answer.get_answers, answer_ids, function(answers){
 						rows.forEach(function(row){
 							if(row.answer_id) {
 								row.answer = answers[row.answer_id];
@@ -256,7 +296,7 @@ function add(app) {
 				// for update
 				answer.id = params.answer_id;
 			}
-			question.save_answer(answer, function(answer_id){
+			question_answer.save_answer(answer, function(answer_id){
 				data.answer_id = answer_id;
 				mysql_db.insert_or_update('job_resume', data, ['created_at'], callback);
 			});
@@ -311,12 +351,6 @@ function add(app) {
 				});
 			}
 		});
-		// We can add listeners for several form
-		// events such as "progress"introducer
-//		req.form.on('progress', function(bytesReceived, bytesExpected){
-//			var percent = (bytesReceived / bytesExpected * 100) | 0;
-//			process.stdout.write('Uploading: %' + percent + '\r');
-//		});
 	});
 	
 	function _get_resume(job_id, user_id, callback) {
@@ -325,7 +359,7 @@ function add(app) {
 					function(resume){
 				if(resume) {
 					resume.filename = path.basename(resume.filepath);
-					question.get_answer(resume.answer_id, function(answer){
+					question_answer.get_answer(resume.answer_id, function(answer){
 						resume.answer = answer;
 						callback(resume);
 					});
@@ -340,18 +374,25 @@ function add(app) {
 	
 	app.get('/job/:id', userutil.load_user_middleware, function(req, res, next) {
 		var job_id = req.params.id;
-		var locals = {title: '职位信息'};
-		get_jobs('where id=?', [job_id], function(rows) {
-			if(rows.length == 1) {
-				var job = locals.job = rows[0];
-				// 如果用户已经登录，则判断用户是否提交过简历
-				_get_resume(job_id, req.cookies.tsina_token, function(resume){
-					locals.resume = resume;
-					question.get_question(job.question_id, function(question){
-						job.question = question;
+		var locals = {title: '职位信息', resume: null, job: null};
+		get_job(job_id, function(job) {
+			locals.job = job;
+			if(job && job.id) {
+				var user_id = req.cookies.tsina_token;
+				if(user_id) {
+					// 如果用户已经登录，则判断用户是否提交过简历
+					utillib.waitfor(
+					[_get_resume, job_id, user_id, function(resume){
+						locals.resume = resume;
+					}], 
+					[check_likes, user_id, [job_id], function(likes){
+						locals.job.user_like = likes[job.id];
+					}], function(){
 						res.render('job/detail.html', locals);
 					});
-				});
+				} else {
+					res.render('job/detail.html', locals);
+				}
 			} else {
 				next();
 			}
@@ -535,6 +576,49 @@ function add(app) {
 				locals.jobs = rows;
 				res.render('index.html', locals);
 			});
+		}
+	});
+	
+	/* 我喜欢此职位接口
+	 * return: 
+	 *     1:未知用户, 2:异常, 0: 成功.
+	 */ 
+	app.get('/job/like/:id', function(req, res){
+		var job_id = req.params.id;
+		var user_id = req.cookies.tsina_token;
+		if(user_id) {
+			mysql_db.query('insert IGNORE into job_like set job_id=?, user_id=?;'
+					+ 'update job set like_count=like_count+1 where id=?;',
+					[job_id, user_id, job_id],
+					function(err, result){
+				if(err) {
+					console.error(err);
+				}
+				console.log(result);
+				res.send('0');
+			});
+		} else {
+			res.send('1');
+		}
+	});
+	
+	app.get('/job/unlike/:id', function(req, res){
+		var job_id = req.params.id;
+		var user_id = req.cookies.tsina_token;
+		if(user_id) {
+			mysql_db.query('delete from job_like where job_id=? and user_id=?;'
+					+ 'update job set like_count=like_count-1 where id=?;',
+					[job_id, user_id, job_id],
+					function(err, result){
+				if(err) {
+					console.error(err);
+					res.send('2');
+				} else {
+					res.send('0');
+				}
+			});
+		} else {
+			res.send('1');
 		}
 	});
 };

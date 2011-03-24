@@ -1,7 +1,7 @@
 // 处理用户认证相关逻辑
 var tapi = require('node-weibo'),
 	config = require('./config.js'),
-	utillib = require('./util.js'),
+	utillib = require('./public/js/util.js'),
 	mysql_db = require('./db.js').mysql_db;
 
 function _format_cookie_token_name(blogtype) {
@@ -79,6 +79,14 @@ function get_users(user_ids, callback) {
 		}
 		callback(users);
 	});
+};
+
+var get_user = module.exports.get_user = function(user_id, callback) {
+	if(!user_id) {
+		callback(null);
+	} else {
+		mysql_db.get_obj('user', {user_id: user_id}, callback);
+	}
 };
 
 function auth(app) {
