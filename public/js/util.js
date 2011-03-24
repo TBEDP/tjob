@@ -120,3 +120,14 @@ var VideoService = {
 	}
 };
 
+Object.prototype.get_length = function(){
+	if(this.keys) {
+		return this.keys(this).length;
+	} else {
+		var len = 0;
+		for(k in this) {
+			len++;
+		}
+		return len;
+	}
+};
