@@ -120,12 +120,12 @@ var VideoService = {
 	}
 };
 
-Object.prototype.get_length = function(){
-	if(this.keys) {
-		return this.keys(this).length;
+function get_dict_length(dict){
+	if(Object.keys) {
+		return Object.keys(dict).length;
 	} else {
 		var len = 0;
-		for(k in this) {
+		for(k in dict) {
 			len++;
 		}
 		return len;

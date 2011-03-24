@@ -43,7 +43,7 @@ $(document).ready(function(){
 	var job_id = $('#job_id').val(), weibo_id = $('#job_weibo_id').val();
     // 获取转发人列表
     $.getJSON('/job/' + job_id + '/repost_users/' + weibo_id, function(users){
-    	if(users.get_length > 0) {
+    	if(get_dict_length(users) > 0) {
     		$('#repost_users').append('转发者: ');
     		for(var screen_name in users){
             	var item = {
