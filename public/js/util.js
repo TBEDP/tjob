@@ -186,48 +186,65 @@ exports.get_pagging = function(req, default_count) {
 
 /*
  * 并发调用多个方法，当最后一个方法完成callback后，将调用finished_callback
- * 参数: ([function1, arg1, arg2, callback1], function2, ..., finished_callback)
- * waitfor([foo, hello, function(s){console.log(s)}], [bar, world, function(){}], function(){done.});
+ * function 的最后一个参数必须为callback参数，才能使流程流转下去
+ * 参数: ([
+ * 	  [function1, [arg1, arg2, ...], callback1, callback1_context, function1_context], 
+ *    [function2, ...], ..., [functionN, ...]], 
+ *    finished_callback, finished_context)
+ *    
+ * waitfor([[foo, [hello], function(s){console.log(s)}, foo_context], 
+ * 	  [bar, [world], function(){}, bar_context]], function(){done.}, finished_context);
  * 
- * demo:
- * 
- *  function foo(a, b, cb) {
+demo:
+ 	
+ 	// mysql query
+	function foo(a, b, cb) {
 		console.log('foo call', arguments);
-		cb(a + b);
+		var c = a + b;
+		mysq_db.query('insert into result set c=?', [c], function(err, result) {
+			cb(err, result);
+		});
 	}
 	
+	// redis get
 	function bar(s, cb) {
 		console.log('bar call', arguments);
-		cb(s + ' world');
+		redis.get(s, function(data){
+			cb(s + ' : ' + data);
+		});
 	}
 	
-	waitfor([foo, 1, 2, function(result){
-		console.log('foo done', result);
-	}], [bar, 'hello', function(result){
-		console.log('bar done', result);
-	}], function(){
-		console.log('wait for done');
-	});
- * 
+	waitfor([
+		[foo, [1, 2], function(err, result){
+		if(err) {
+			console.log('foo error', err);
+		} else {
+			console.log('foo done', result);
+		}
+	}], [bar, ['hello'], function(result){
+		this.log('bar done', result);
+	}, console], function(){
+		this.log('wait for done');
+	}, console);
+	
  */
-exports.waitfor = function(){
-	var wait_count = arguments.length - 1;
+exports.waitfor = function(calls, finished_callback, finished_context){
+	var wait_count = calls.length;
 	var len = wait_count;
-	var finished_callback = arguments[wait_count];
-	var items = [];
-	for(var i=0;i<len;i++) {
-		items.push(arguments[i]);
-	}
-	items.forEach(function(args){
-		var f = args[0], params = args.slice(1, args.length - 1), cb = args[args.length - 1];
+	calls.forEach(function(args){
+		var f = args[0], params = args[1], 
+			cb = args[2], cb_context = args[3],
+			f_context = args[4];
 		params.push(function(){
-			cb.apply(this, arguments);
+			if(cb) {
+				cb.apply(cb_context, arguments);
+			}
 			wait_count--;
 			if(wait_count == 0) {
-				finished_callback();
+				finished_callback.call(finished_context, len);
 			}
 		});
-		f.apply(this, params);
+		f.apply(f_context, params);
 	});
 };
 

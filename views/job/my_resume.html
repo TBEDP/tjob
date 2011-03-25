@@ -8,6 +8,11 @@
         职位信息来源: <a href="http://t.sina.com.cn/n/${resume.introducer}" target="_blank">@${resume.introducer}</a><br />
         投递时间: ${resume.created_at.format('yyyy-MM-dd hh:mm:ss')}<br />
         状态: ${resume.status_name}
+        {{if resume.comment }}
+        <br />
+        我要说说: <br />
+        {{html resume.comment}}
+        {{/if}}
         {{if resume.answer }}
         <br />
         问题: <br />

@@ -84,10 +84,11 @@ var check_likes = module.exports.check_likes = function(user_id, job_ids, callba
 				job_ids.concat(user_id), function(err, rows){
 			if(err) {
 				console.error(err);
+			} else {
+				rows.forEach(function(row){
+					likes[row.job_id] = true;
+				});
 			}
-			rows.forEach(function(row){
-				likes[row.job_id] = true;
-			});
 			callback(likes);
 		});
 	}
@@ -231,28 +232,28 @@ function add(app) {
 						}
 						qs.push('?');
 					});
-					utillib.waitfor([get_jobs, 'where id in (' + qs.join(',') + ')', 
-					                 job_ids, function(jobs){
-						var job_map = {};
-						jobs.forEach(function(job){
-							job_map[job.id] = job;
-						});
-						// 填充数据
-						rows.forEach(function(row){
-							row.user = resume_user;
-							row.job = job_map[row.job_id];
-							row.status_name = RESUME_STATUS[row.status];
-							row.filename = path.basename(row.filepath);
-						});
-					}], 
-					[question_answer.get_answers, answer_ids, function(answers){
-						rows.forEach(function(row){
-							if(row.answer_id) {
-								row.answer = answers[row.answer_id];
-							}
-						});
-					}], 
-					function(){
+					utillib.waitfor([
+					    [get_jobs, ['where id in (' + qs.join(',') + ')', job_ids], function(jobs){
+							var job_map = {};
+							jobs.forEach(function(job){
+								job_map[job.id] = job;
+							});
+							// 填充数据
+							rows.forEach(function(row){
+								row.user = resume_user;
+								row.job = job_map[row.job_id];
+								row.status_name = RESUME_STATUS[row.status];
+								row.filename = path.basename(row.filepath);
+							});
+						}], 
+						[question_answer.get_answers, [answer_ids], function(answers){
+							rows.forEach(function(row){
+								if(row.answer_id) {
+									row.answer = answers[row.answer_id];
+								}
+							});
+						}]
+					], function(){
 						locals.resumes = rows;
 						res.render('job/my_resume.html', locals);
 					});
@@ -282,10 +283,18 @@ function add(app) {
 			job_id: params.job_id,
 			user_id: params.user_id,
 			introducer: params.introducer,
-			filepath: params.filepath,
-			size: params.size,
+			comment: params.comment,
 			created_at: mysql_db.literal('now()')
 		};
+		if(params.filepath) {
+			data.filepath = params.filepath;
+		}
+		if(params.size) {
+			data.size = params.size;
+		}
+		if(params.introducer) {
+			data.introducer = params.introducer;
+		}
 		if(params.question_id && params.answer) {
 			var answer = {
 				content: params.answer,
@@ -320,34 +329,42 @@ function add(app) {
 				if(introducer && introducer.indexOf('@') == 0) {
 					introducer = introducer.substring(1);
 				}
-				var filepath = files.resume.filename;
-				filepath = path.join('resume/' + job_id + '/' + user_id, filepath);
-				var size = files.resume.size;
-				// jobid/userid/filename
-				var save_path = path.join(filedir, filepath);
 				var params = {
 					job_id: job_id,
 					user_id: user_id,
 					introducer: introducer,
-					filepath: filepath,
-					size: size,
 					question_id: fields.question_id,
 					answer: fields.answer,
-					answer_id: fields.answer_id
+					answer_id: fields.answer_id,
+					comment: fields.comment
 				};
-				_save_file(files.resume.path, save_path, function() {
-					_save_resume(params, function(err, result){
+				
+				var filepath = files.resume ? files.resume.filename : null;
+				var calls = [
+				    [_save_resume, [params], function(err, result){
 						// job_id, user_id唯一，一个人对一个职位只能投递一份简历
-						if(err) {
+				    	if(err) {
 							next(err);
 						} else {
 							if(result.affectedRows == 1) { // insert
 								// 增加简历统计数目
-								mysql_db.query('update job set resume_count=resume_count+1 where id=?', [job_id]);
+								mysql_db.query('update job set resume_count=resume_count+1 where id=?', 
+									[job_id]);
 							}
-							res.redirect('/resume/list/' + user_id);
 						}
-					});
+					}]
+				];
+				if(filepath) {
+					filepath = path.join('resume/' + job_id + '/' + user_id, filepath);
+					var size = files.resume.size;
+					params.filepath = filepath;
+					params.size = files.resume.size;
+					// jobid/userid/filename
+					var save_path = path.join(filedir, filepath);
+					calls.push([_save_file, [files.resume.path, save_path]]);
+				}
+				utillib.waitfor(calls, function(){
+					res.redirect('/resume/list/' + user_id);
 				});
 			}
 		});
@@ -381,13 +398,14 @@ function add(app) {
 				var user_id = req.cookies.tsina_token;
 				if(user_id) {
 					// 如果用户已经登录，则判断用户是否提交过简历
-					utillib.waitfor(
-					[_get_resume, job_id, user_id, function(resume){
-						locals.resume = resume;
-					}], 
-					[check_likes, user_id, [job_id], function(likes){
-						locals.job.user_like = likes[job.id];
-					}], function(){
+					utillib.waitfor([
+						[_get_resume, [job_id, user_id], function(resume){
+							locals.resume = resume;
+						}], 
+						[check_likes, [user_id, [job_id]], function(likes){
+							locals.job.user_like = likes[job.id];
+						}]
+					], function(){
 						res.render('job/detail.html', locals);
 					});
 				} else {
@@ -594,8 +612,8 @@ function add(app) {
 				if(err) {
 					console.error(err);
 				}
-				console.log(result);
 				res.send('0');
+				
 			});
 		} else {
 			res.send('1');

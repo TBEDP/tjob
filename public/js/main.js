@@ -37,13 +37,17 @@ $(document).ready(function(){
     $('.like_button').click(function(){
     	if(current_user_id) {
     		var $this = $(this);
+    		if($this.hasClass('doing')) {
+    			return;
+    		}
+    		$this.addClass('doing');
     		var job_id = $this.attr('jobid');
     		var like_count = $this.find('span:last').text() || '0';
     		if($this.hasClass('unlike')) {
     			$.get('/job/unlike/' + job_id, function(data){
         			like_count = parseInt(like_count) - 1;
         			$this.find('span:last').html(like_count);
-        			$this.removeClass('unlike');
+        			$this.removeClass('unlike doing');
         			$this.find('span:first').html('Like');
         		});
     		} else {
@@ -51,6 +55,7 @@ $(document).ready(function(){
         			like_count = parseInt(like_count) + 1;
         			$this.find('span:last').html(like_count);
         			$this.addClass('unlike');
+        			$this.removeClass('doing');
         			$this.find('span:first').html('Unlike');
         		});
     		}

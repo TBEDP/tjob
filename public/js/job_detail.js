@@ -8,15 +8,15 @@ $(document).ready(function(){
     });
     
     // 检测是否可以提交数据
-    // 选择了文件，回答了问题，才可以提交
+    // 只要有一项有数据，就可以提交
     var _check_can_submit = function() {
-    	var can_submit = true;
-    	if(!$('#resume').val()) {
-    		can_submit = false;
+    	var can_submit = false;
+    	if($('#comment').val()|| $('#resume').val() || $('#answer').val() ) {
+    		can_submit = true;
     	}
-    	if($('#answer').length == 1 && !$('#answer').val()) {
-    		can_submit = false;
-    	}
+//    	if($('#answer').length == 1 && !$('#answer').val()) {
+//    		can_submit = false;
+//    	}
     	can_submit ? $('#upload_btn').attr('disabled', false) 
         	: $('#upload_btn').attr('disabled', true);
     };
@@ -29,6 +29,12 @@ $(document).ready(function(){
         	onchange_callback: _check_can_submit
         }));
     }
+    
+//    $('#upload_btn').click(function(){
+//    	if(!$('#resume').val()) {
+//    		$('#resume').attr('disabled', 'disabled');
+//    	}
+//    });
     
     $('.close_job_btn').click(function(){
         if(confirm('确定要结束此招聘信息？')){
