@@ -4,10 +4,10 @@
 $(document).ready(function(){
     $('#desc, #title').keyup(function(){
         var text = '招聘#' + $('#title').val() + '#: ' + $('#desc').val();
-        if(text.length > 120){
-            text = text.substring(0, 117) + '...';
+        if(text.length > 125){
+            text = text.substring(0, 123) + '...';
         }
-        text += ' ' + 'http://sinaurl.cn/xxxxxxxx';
+        text += ' ' + 'http://t.cn/xxxxxx';
         $('#weibo_preview').html(text);
         $('#wordcount').html(140 - $('#weibo_preview').html().length);
     });

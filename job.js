@@ -111,8 +111,8 @@ var format_weibo_status = module.exports.format_weibo_status = function(params, 
 	var redirect_url = '/job/' + job_id;
 	// 使用当前登录用户发一条微博
 	var status = '招聘#' + params.title + '#: ' + params.desc;
-	if(status.length > 120) {
-		status = status.substring(0, 117) + '...';
+	if(status.length > 125) {
+		status = status.substring(0, 123) + '...';
 	}
 	status += ' ' + config.base_url + redirect_url;
 	// 微博meta数据，方便跟踪对应到职位相关信息
@@ -186,9 +186,9 @@ function add(app) {
 					var job_id = r.insertId;
 					var redirect_url = '/job/' + job_id;
 					// 使用当前登录用户发一条微博
-					var data = format_weibo_status(params, job_id);
-					data.user = req.users.tsina;
-					tapi.update(data, function(data){
+					var update_data = format_weibo_status(params, job_id);
+					update_data.user = req.users.tsina;
+					tapi.update(update_data, function(data){
 						mysql_db.query('update job set weibo_id=?, weibo_info=?, last_check=now() where id=?', 
 								[data.id, JSON.stringify(data), job_id], function(err, result){
 							res.redirect(redirect_url);

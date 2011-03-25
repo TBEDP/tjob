@@ -101,7 +101,7 @@ app.post('/tapi/counts', userutil.load_user_middleware, function(req, res){
 	if(req.users.tsina) {
 		tapi.counts({user: req.users.tsina, ids: req.body.ids}, function(data) {
 			var counts = [];
-			if(!data.error) {
+			if(data) {
 				counts = data;
 			}
 			res.send(JSON.stringify(counts));

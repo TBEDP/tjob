@@ -4,17 +4,18 @@ require.paths.push('/usr/lib/node/');
 
 var tapi = require('node-weibo'),
 	config = require('../config.js'),
+	format_weibo_status = require('../job.js').format_weibo_status,
 	tjob_user = config.tjob_user;
 var db = require('../db.js');
 var mysql_db = db.mysql_db;
 
 // 处理未发送成功的微博
 function send_job_weibo(callback) {
-	mysql_db.query('select * from job where weibo_id is null limit 10', function(err, rows){
+	mysql_db.query('select * from job where weibo_id is null or weibo_id="" limit 10', function(err, rows){
 		if(err) {
 			console.error(err);
 		}
-		if(rows.length == 0){
+		if(!rows || rows.length == 0){
 			callback();
 			return;
 		}
@@ -29,14 +30,11 @@ function send_job_weibo(callback) {
 			mysql_db.query('select * from user where user_id=?', 
 					[row.author_id], function(err, rs){
 				if(rs.length == 1) {
-					var status = '招聘#' + row.title + '#: ' + row.desc;
-					if(status.length > 120) {
-						status = status.substring(0, 117) + '...';
-					}
-					var redirect_url = '/job/' + row.id;
-					status += ' ' + config.base_url + redirect_url;
+					var params = format_weibo_status(row, row.id);
 					var user = JSON.parse(rs[0].info);
-					tapi.update({user: user, status: status}, function(data){
+					params.user = user;
+					console.log(user.screen_name, params.status, row);
+					tapi.update(params, function(data, error, res){
 						if(data && data.id) {
 							console.log(data.t_url, data.user.screen_name);
 							mysql_db.query('update job set weibo_id=? where id=?', [data.id, row.id], function(){
@@ -44,12 +42,13 @@ function send_job_weibo(callback) {
 							});
 						} else {
 							// error: repeated weibo text
-							if(data.error && data.error.indexOf('repeated weibo text') >= 0){
+							if(error && (error.indexOf('repeated weibo text') >= 0 
+									|| error.indexOf('"error":"40028:') >= 0)){
 								mysql_db.query('update job set weibo_id=0, repost_id=0 where id=?', [row.id], function(){
 									row_finished();
 								});
 							} else {
-								console.error(data);
+								console.error(data, error);
 								mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), row.id], function(){
 									row_finished();
 								});
@@ -72,19 +71,21 @@ function repost_job_weibo(callback){
 		if(rows.length == 1) {
 			console.log('repost_job_weibo', rows.length, 'rows');
 			var job = rows[0];
-			tapi.repost({user: tjob_user, id: job.weibo_id, status:'推荐职位 #' + job.title + '#'}, function(data){
+			tapi.repost({user: tjob_user, id: job.weibo_id, 
+					status:'推荐职位 #' + job.title + '#'}, function(data, error, res){
 				if(data && data.id) {
 					mysql_db.query('update job set repost_id=? where id=?', [data.id, job.id], function(){
 						callback();
 					});
 				} else {
 					// error: repeated weibo text
-					if(data.error && data.error.indexOf('repeated weibo text') >= 0){
+					if(error && (error.indexOf('repeated weibo text') >= 0 
+							|| error.indexOf('"error":"40028:') >= 0)){
 						mysql_db.query('update job set repost_id=0 where id=?', [job.id], function(){
 							callback();
 						});
 					} else {
-						console.error(data);
+						console.error(data, error);
 						mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), job.id], function(){
 							callback();
 						});
