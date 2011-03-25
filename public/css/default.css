@@ -395,7 +395,7 @@ input.long {
 a.like_button, a.big_button {
 	padding: 4px;
     font-size: 15px;
-    background: #EF8116;
+    background-color: #EF8116;
     color: white;
     text-decoration: none;
 }

@@ -37,6 +37,18 @@ var get_job = module.exports.get_job = function(id, callback) {
 	}
 };
 
+var get_jobs_by_ids = exports.get_jobs = function(ids, callback){
+	if(!ids || ids.length == 0) {
+		callback([]);
+	} else {
+		var qs = [];
+		ids.forEach(function(id){
+			qs.push('?');
+		});
+		get_jobs('where id in (' + qs.join(',') + ') order by id desc', ids, callback);
+	}
+};
+
 function get_jobs(condition, params, callback) {
 	if(!params) {
 		params = [];
@@ -224,16 +236,15 @@ function add(app) {
 						res.render('job/my_resume.html', locals);
 						return;
 					}
-					var job_ids = [], qs = [], answer_ids = [];
+					var job_ids = [], answer_ids = [];
 					rows.forEach(function(row){
 						job_ids.push(row.job_id);
 						if(row.answer_id) {
 							answer_ids.push(row.answer_id);
 						}
-						qs.push('?');
 					});
 					utillib.waitfor([
-					    [get_jobs, ['where id in (' + qs.join(',') + ')', job_ids], function(jobs){
+					    [get_jobs_by_ids, [job_ids], function(jobs){
 							var job_map = {};
 							jobs.forEach(function(job){
 								job_map[job.id] = job;
@@ -526,14 +537,13 @@ function add(app) {
 					res.render('resumelist.html', locals);
 					return;
 				}
-				var user_ids = [], job_ids = [], qs = [];
+				var user_ids = [], job_ids = [];
 				rows.forEach(function(row){
 					user_ids.push(row.user_id);
 					job_ids.push(row.job_id);
-					qs.push('?');
 				});
 				userutil.get_users(user_ids, function(users){
-					get_jobs('where id in (' + qs.join(',') + ')', job_ids, function(jobs){
+					get_jobs_by_ids(job_ids, function(jobs){
 						var job_map = {};
 						jobs.forEach(function(job){
 							job_map[job.id] = job;
@@ -566,7 +576,7 @@ function add(app) {
 	
 	// 热门职位
 	app.get('/job/hot', function(req, res, next){
-		mysql_db.query('select id, title from job where status=0 order by resume_count desc, repost_count desc limit 10;',
+		mysql_db.query('select id, title from job where status=0 order by like_count desc, resume_count desc, repost_count desc limit 10;',
 				function(err, rows){
 			if(err) {
 				next(err);
@@ -613,7 +623,6 @@ function add(app) {
 					console.error(err);
 				}
 				res.send('0');
-				
 			});
 		} else {
 			res.send('1');
@@ -637,6 +646,35 @@ function add(app) {
 			});
 		} else {
 			res.send('1');
+		}
+	});
+	
+	app.get('/job/likes/:user_id', userutil.load_user_middleware, function(req, res, next){
+		var user_id = req.params.user_id;
+		if(req.cookies.tsina_token != user_id) {
+			res.redirect('/');
+		} else {
+			mysql_db.query('select job_id from job_like where user_id=?',
+					[user_id], function(err, rows){
+				if(err) {
+					next(err);
+				} else {
+					var job_ids = [];
+					rows.forEach(function(row){
+						job_ids.push(row.job_id);
+					});
+					get_jobs_by_ids(job_ids, function(jobs){
+						jobs.forEach(function(job){
+							job.user_like = true;
+						});
+						var locals = {
+							title: '我喜欢的职位',
+							jobs: jobs
+						};
+						res.render('index.html', locals);
+					});
+				}
+			});
 		}
 	});
 };

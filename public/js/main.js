@@ -1,3 +1,18 @@
+
+var doing = {
+	start: function($ele) {
+		var result = false;
+		if($ele.prev('img.doing').length == 0) {
+			result = true;
+			$ele.before('<img class="doing" src="/images/loader-gray.gif" />');
+		}
+		return result;
+	}, 
+	end: function($ele) {
+		$ele.prev('img.doing').remove();
+	}
+};
+
 $(document).ready(function(){
 	var pathname = window.location.pathname;
     $('#menu ul li a').each(function(){
@@ -37,26 +52,26 @@ $(document).ready(function(){
     $('.like_button').click(function(){
     	if(current_user_id) {
     		var $this = $(this);
-    		if($this.hasClass('doing')) {
+    		if(!doing.start($this)) {
     			return;
     		}
-    		$this.addClass('doing');
     		var job_id = $this.attr('jobid');
     		var like_count = $this.find('span:last').text() || '0';
     		if($this.hasClass('unlike')) {
     			$.get('/job/unlike/' + job_id, function(data){
         			like_count = parseInt(like_count) - 1;
         			$this.find('span:last').html(like_count);
-        			$this.removeClass('unlike doing');
+        			$this.removeClass('unlike');
         			$this.find('span:first').html('Like');
+        			doing.end($this);
         		});
     		} else {
     			$.get('/job/like/' + job_id, function(data){
         			like_count = parseInt(like_count) + 1;
         			$this.find('span:last').html(like_count);
         			$this.addClass('unlike');
-        			$this.removeClass('doing');
         			$this.find('span:first').html('Unlike');
+        			doing.end($this);
         		});
     		}
     		
