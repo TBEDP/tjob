@@ -51,14 +51,14 @@ $(document).ready(function(){
     $.getJSON('/job/' + job_id + '/repost_users/' + weibo_id, function(data){
     	var users = data.users;
     	if(users.length > 0) {
-    		$('#repost_users').append('转发者: ');
+    		$('#repost_users').append('<h2>转发者</h2>');
     		for(var i=0; i<users.length; i++){
     			var screen_name = users[i];
             	var item = {
             		screen_name: screen_name,
             		screen_name_encode: encodeURI(screen_name)
             	};
-                $('#repost_users').append('<a target="_blank" href="http://t.sina.com.cn/n/{{screen_name_encode}}">@{{screen_name}}</a>&nbsp;&nbsp;'.format(item));;
+                $('#repost_users').append('<a class="repost_user" target="_blank" href="http://t.sina.com.cn/n/{{screen_name_encode}}">@{{screen_name}}</a>&nbsp;&nbsp;'.format(item));;
             }
 		}
     	if(current_user_id) {

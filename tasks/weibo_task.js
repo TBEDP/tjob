@@ -178,7 +178,7 @@ function fetch_job_repost(callback) {
 			var finished = 0, results = [];
 			rows.forEach(function(row){
 				var sqls = [], args = [];
-				var params = {user: tjob_user, id: row.weibo_id};
+				var params = {user: tjob_user, id: row.weibo_id, count: 200};
 				if(row.repost_since_id) {
 					params.since_id = row.repost_since_id;
 				}

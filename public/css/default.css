@@ -404,3 +404,17 @@ a.like_button:hover, a.big_button:hover {
     color: white;
     text-decoration: underline;
 }
+
+#repost_users {
+	border-top: 1px solid #e5e5e5;
+	padding-top: 10px;
+	line-height: 1.6em;
+}
+a.repost_user {
+    padding: 2px;
+    font-size: 13px;
+    text-decoration: none;
+}
+a.repost_user:hover {
+    text-decoration: underline;
+}

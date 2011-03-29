@@ -435,7 +435,7 @@ function add(app) {
 	
 	
 	function _get_job_repost_screen_names(job_weibo_id, callback) {
-		mysql_db.query('select distinct(screen_name) from job_repost where source_id=? limit 50', 
+		mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
 				[job_weibo_id], function(err, rows){
 			var names = [];
 			if(err) {
@@ -465,7 +465,7 @@ function add(app) {
 		var introducer = null;
 		if(user_id) {
 			var sql = 'SELECT friend_screen_name FROM user_friends where user_id =? ' 
-				+ ' and friend_id in (select user_id from job_repost where source_id=?)';
+				+ ' and friend_id in (select user_id from job_repost where source_id=?) limit 1';
 			mysql_db.query(sql, [user_id, job_weibo_id], function(err, rows){
 				if(err) {
 					console.error(err);
@@ -483,7 +483,6 @@ function add(app) {
 	
 	// 获取实时更新
 	app.get('/job/:id/repost_users/:source_id', userutil.load_user_middleware, function(req, res, next){
-		// 默认返回前50个
 		var data = {users: [], introducer: null};
 		var current_user_id = req.cookies.tsina_token,
 			weibo_id = req.params.source_id;
