@@ -1,6 +1,13 @@
 <script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
 <script type="text/javascript" src="/js/editor.js"></script>
 <script type="text/javascript" src="/js/job_detail.js"></script>
+
+<script type='text/javascript' src='/js/jquery-autocomplete/lib/jquery.bgiframe.min.js'></script>
+<script type='text/javascript' src='/js/jquery-autocomplete/lib/thickbox-compressed.js'></script> 
+<script type='text/javascript' src='/js/jquery-autocomplete/jquery.autocomplete.js'></script>
+<link rel="stylesheet" type="text/css" href="/js/jquery-autocomplete/jquery.autocomplete.css" /> 
+<link rel="stylesheet" type="text/css" href="/js/jquery-autocomplete/lib/thickbox.css" /> 
+
 <input type="hidden" id="job_id" value="${job.id}" />
 <input type="hidden" id="job_weibo_id" value="${job.weibo_id}" />
 <div class="post">
@@ -56,8 +63,7 @@
                 {{/if}}
             <form id="upload_resume_form" {{if resume}}style="display:none;"{{/if}} method="post" action="/resume/upload/${job.id}" enctype="multipart/form-data">
                 <h3>招聘信息来源(从谁的微博知道此信息的?):</h3>
-                <!-- <input type="text" id="introducer" name="introducer" size="50" /><br/><br/>  -->
-                <p id="introducer_selector"></p>
+                @<input type="text" id="introducer" name="introducer" size="20" />
                 {{if job.question}}
 		        <h3>回答附加题目:</h3>
 		        <input type="hidden" name="question_id" value="${job.question.id}" />

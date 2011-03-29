@@ -5,6 +5,7 @@ require.paths.push('/usr/lib/node/');
 var tapi = require('node-weibo'),
 	config = require('../config.js'),
 	format_weibo_status = require('../job.js').format_weibo_status,
+	fetch_user_friends = require('../user.js').fetch_user_friends,
 	tjob_user = config.tjob_user;
 var db = require('../db.js');
 var mysql_db = db.mysql_db;
@@ -176,24 +177,31 @@ function fetch_job_repost(callback) {
 			console.log('fetch_job_repost', rows.length, 'rows');
 			var finished = 0, results = [];
 			rows.forEach(function(row){
+				var sqls = [], args = [];
 				var params = {user: tjob_user, id: row.weibo_id};
 				if(row.repost_since_id) {
 					params.since_id = row.repost_since_id;
 				}
-				tapi.repost_timeline(params, function(statues){
-					if(statues.error) {
-						console.error(statues);
+				tapi.repost_timeline(params, function(statues, error){
+					if(error) {
+						console.error(error);
 					} else {
-						var sqls = [], args = [];
+						if(statues.length > 0){
+							console.log('fetch_job_repost', row.weibo_id, 'reposts', statues.length);
+						}
 						var since_id = row.repost_since_id;
 						statues.forEach(function(item) {
 							console.log(item.user.screen_name, item.text);
 							console.log(item.t_url);
-							sqls.push('insert into job_repost set id=?, source_id=?, user_id=?, screen_name=?, weibo_info=?, created_at=now() ON DUPLICATE KEY UPDATE source_id=values(source_id), screen_name=values(screen_name), weibo_info=values(weibo_info);');
+							sqls.push('insert into job_repost set id=?, source_id=?, user_id=?, screen_name=?, weibo_info=?, created_at=now() ' 
+								+ ' ON DUPLICATE KEY UPDATE source_id=values(source_id), user_id=values(user_id), screen_name=values(screen_name), weibo_info=values(weibo_info);');
 							if(!since_id || String(since_id) < String(item.id)) {
 								since_id = String(item.id);
 							}
-							args.push(item.id, params.id, item.user.id, item.user.screen_name, JSON.stringify(item));
+							args.push(item.id, params.id, 
+									tjob_user.blogtype + ':' + item.user.id, 
+									item.user.screen_name, 
+									JSON.stringify(item));
 						});
 						sqls.push('update job set fetch_repost=0, repost_since_id=? where id=?;');
 						args.push(since_id, row.id);
@@ -215,7 +223,61 @@ function fetch_job_repost(callback) {
 	});
 };
 
-var tasks = [send_job_weibo, repost_job_weibo, job_total_count, fetch_job_repost];
+function _fetch_friends(user, cursor, fetch_all, callback) {
+	console.log('fetching', user.screen_name);
+	fetch_user_friends(user, 200, cursor, function(data) {
+		console.log('fetch', user.screen_name, data.users.length, 'friends');
+		if(fetch_all && data.next_cursor) {
+			// TODO 递归？！
+			_fetch_friends(user, data.next_cursor, true, callback);
+		} else {
+			console.log('fetch', user.screen_name, ' done');
+			callback(data);
+		}
+	});
+};
+
+
+/**
+ * 定时爬取用户跟随者
+ *
+ * @api public
+ */
+function fetch_weibo_user_friends(callback) {
+	var update_fetch_date = 'update user set fetch_friends_date=DATE_ADD(now(), interval 10 minute) where user_id=?;';
+	var sql = 'select * from user where fetch_friends_date is null or fetch_friends_date < now() limit 20';
+	mysql_db.query(sql, function(err, rows){
+		if(err) {
+			console.error(err);
+			callback();
+		} else {
+			if(rows.length == 0) {
+				callback();
+			} else {
+				console.log('fetch ' + rows.length +' user friends');
+				var finished = 0;
+				rows.forEach(function(user){
+					var info = JSON.parse(user.info);
+					Object.extend(user, info);
+					var fetch_all = user.fetch_friends_date == null; //没有爬取过，则是第一次爬取，爬全部的
+					_fetch_friends(user, -1, fetch_all, function(data){
+						mysql_db.query(update_fetch_date, [user.user_id], function(err, result){
+							if(err) {
+								console.error(err);
+							}
+							if(++finished == rows.length) {
+								callback();
+							}
+						});
+					});
+				});
+			}
+		}
+	});
+};
+
+var tasks = [send_job_weibo, repost_job_weibo, job_total_count, 
+             fetch_job_repost, fetch_weibo_user_friends];
 var finished = 0;
 for(var i=0;i<tasks.length;i++){
 	var task = tasks[i];

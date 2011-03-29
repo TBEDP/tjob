@@ -35,6 +35,7 @@ if(debug) {
 	module.exports.tjob_user = {
 		'screen_name': 'tjobtest',
 		'username': 'tjobtest@sina.cn',
+		'blogtype': 'tsina',
 		'password': '123456'
 	};
 }

@@ -118,3 +118,25 @@ CREATE TABLE `tjob`.`job_like` (
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
 ALTER TABLE `tjob`.`job_like` ADD INDEX `jobid`(`job_id`),
  ADD INDEX `user_id`(`user_id`);
+
+-- 3.28 add user_friends: 用户跟随的人
+
+ALTER TABLE `tjob`.`user` ADD COLUMN `fetch_friends_cursor` varchar(100)  
+    DEFAULT NULL COMMENT '获取所关注的人游标' AFTER `updated_at`;
+ALTER TABLE `tjob`.`user` ADD COLUMN `fetch_friends_date` datetime  
+    COMMENT '获取关注人的时间' AFTER `fetch_friends_cursor`;
+
+
+CREATE TABLE  `tjob`.`user_friends` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(50) DEFAULT NULL COMMENT '用户id',
+  `friend_id` varchar(50) DEFAULT NULL COMMENT '用户跟随的人的id',
+  `friend_screen_name` varchar(200) DEFAULT NULL,
+  `friend_user` longtext,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `relation` (`user_id`,`friend_id`),
+  KEY `user_id` (`user_id`),
+  KEY `friend_screen_name` (`friend_screen_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+-- 执行 node fixed_job_repost_user_id.js 修复job_repost user_id格式不正确的问题

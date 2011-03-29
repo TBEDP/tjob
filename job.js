@@ -25,6 +25,11 @@ var get_job = module.exports.get_job = function(id, callback) {
 	} else {
 		mysql_db.get_obj('job', {id: id}, function(job){
 			if(job) {
+				if(job.weibo_info) {
+					job.weibo_info = JSON.parse(job.weibo_info);
+				} else {
+					job.weibo_info = {};
+				}
 				// 获取用户
 				userutil.get_user(job.author_id, function(author) {
 					job.author = author;
@@ -428,57 +433,67 @@ function add(app) {
 		});
 	});
 	
-//	app.get('/job/:id/repost_users/:source_id', function(req, res, next){
-//		mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
-//				[req.params.source_id], function(err, rows){
-//			if(err) {
-//				next(err);
-//			} else {
-//				var users = {};
-//				rows.forEach(function(row) {
-//					users[row.screen_name] = 1;
-//				});
-//				res.send(JSON.stringify(users));
-//			}
-//		});
-//	});
 	
-	// 获取实时更新
-	app.get('/job/:id/repost_users/:source_id', userutil.load_user_middleware, function(req, res, next){
-		mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
-				[req.params.source_id], function(err, rows){
+	function _get_job_repost_screen_names(job_weibo_id, callback) {
+		mysql_db.query('select distinct(screen_name) from job_repost where source_id=? limit 50', 
+				[job_weibo_id], function(err, rows){
+			var names = [];
 			if(err) {
 				next(err);
 			} else {
-				var users = {};
 				rows.forEach(function(row) {
-					users[row.screen_name] = 1;
+					names.push(row.screen_name);
 				});
-				res.send(JSON.stringify(users));
 			}
+			callback(names);
 		});
-//		if(req.users.tsina) {
-//			tapi.repost_timeline({user: req.users.tsina, id: req.params.source_id}, function(data){
-//				var users = {};
-//				data.forEach(function(status){
-//					users[status.user.screen_name] = 1;
-//				});
-//				res.send(JSON.stringify(users));
-//			});
-//		} else {
-//			mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
-//					[req.params.source_id], function(err, rows){
-//				if(err) {
-//					next(err);
-//				} else {
-//					var users = {};
-//					rows.forEach(function(row) {
-//						users[row.screen_name] = 1;
-//					});
-//					res.send(JSON.stringify(users));
-//				}
-//			});
-//		}
+	};
+	
+	
+	/**
+	 * 猜测当前用户的推荐人
+	 * 从转发人中判断是否有当前用户关注的人，有则取最早转发的那个
+	 * 若没有，从用户最近friends_timeline中判断所有的人是否在转发人列表中，有则取最早转发人
+	 * 若都没有，则未空
+	 *
+	 * @param job_weibo_id
+	 * @param user_id
+	 * @param callback
+	 * @api private
+	 */
+	function _guess_job_introducer(job_weibo_id, user_id, callback){
+		var introducer = null;
+		if(user_id) {
+			var sql = 'SELECT friend_screen_name FROM user_friends where user_id =? ' 
+				+ ' and friend_id in (select user_id from job_repost where source_id=?)';
+			mysql_db.query(sql, [user_id, job_weibo_id], function(err, rows){
+				if(err) {
+					console.error(err);
+				} else {
+					if(rows.length > 0) {
+						introducer = rows[0].friend_screen_name;
+					}
+				}
+				callback(introducer);
+			});
+		} else {
+			callback(introducer);
+		}
+	};
+	
+	// 获取实时更新
+	app.get('/job/:id/repost_users/:source_id', userutil.load_user_middleware, function(req, res, next){
+		// 默认返回前50个
+		var data = {users: [], introducer: null};
+		var current_user_id = req.cookies.tsina_token,
+			weibo_id = req.params.source_id;
+		utillib.waitfor([[_get_job_repost_screen_names, [weibo_id], function(users){
+			data.users = users;
+		}], [_guess_job_introducer, [weibo_id, current_user_id], function(introducer){
+			data.introducer = introducer;
+		}]], function(){
+			res.send(JSON.stringify(data));
+		});
 	});
 	
 	// 更新
