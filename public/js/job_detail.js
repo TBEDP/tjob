@@ -74,5 +74,10 @@ $(document).ready(function(){
 		width: 260,
 		selectFirst: true
 	});
+    $("#introducer").keypress(function(event){
+    	if(event.keyCode == 13) {
+    		return false;
+    	}
+    });
 
 });
