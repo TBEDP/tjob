@@ -11,12 +11,20 @@ $(document).ready(function(){
     // 只要有一项有数据，就可以提交
     var _check_can_submit = function() {
     	var can_submit = false;
-    	if($('#comment').val()|| $('#resume').val() || $('#answer').val() ) {
+    	var resume_filename = $('#resume').val();
+    	if($('#comment').val()|| resume_filename || $('#answer').val() ) {
     		can_submit = true;
     	}
-//    	if($('#answer').length == 1 && !$('#answer').val()) {
-//    		can_submit = false;
-//    	}
+    	if(resume_filename) {
+    		if(!util.is_filetype(resume_filename, constant.RESUME_FILETYPES)){
+    			can_submit = false;
+    			$('#resume').val('');
+    			alert('只允许上传: ' + constant.RESUME_FILETYPES);
+    		}
+    	}
+    	if($('#answer').length == 1 && !$('#answer').val()) {
+    		can_submit = false;
+    	}
     	can_submit ? $('#upload_btn').attr('disabled', false) 
         	: $('#upload_btn').attr('disabled', true);
     };

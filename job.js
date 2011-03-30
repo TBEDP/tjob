@@ -4,6 +4,7 @@ var path = require('path'),
 	tapi = require('node-weibo'),
 	userutil = require('./user.js'),
 	utillib = require('./public/js/util.js'),
+	constant = require('./public/js/constant.js'),
 	mysql_db = require('./db.js').mysql_db,
 	config = require('./config.js'),
 	question_answer = require('./question.js');
@@ -331,13 +332,18 @@ function add(app) {
 	};
 	
 	app.post('/resume/upload/:job_id', function(req, res, next){
-		// connect-form adds the req.form object
-		// we can (optionally) define onComplete, passing
-		// the exception (if any) fields parsed, and files parsed
 		req.form.complete(function(err, fields, files){
 			if (err) {
 				next(err);
 			} else {
+				var filepath = files.resume ? files.resume.filename : null;
+				// 判断是否合法的文件类型
+				if(!utillib.is_filetype(filepath, constant.RESUME_FILETYPES)) {
+					// 由于客户端已做判断，所以这样的情况都是恶意上传的，直接提示
+					res.send('文件格式错误: ' + filepath 
+						+ ' , 请上传' + constant.RESUME_FILETYPES + '格式的文件');
+					return;
+				}
 				var job_id = req.params.job_id;
 				// 暂时先用新浪微博帐号
 				var user_id = req.cookies.tsina_token;
@@ -354,8 +360,6 @@ function add(app) {
 					answer_id: fields.answer_id,
 					comment: fields.comment
 				};
-				
-				var filepath = files.resume ? files.resume.filename : null;
 				var calls = [
 				    [_save_resume, [params], function(err, result){
 						// job_id, user_id唯一，一个人对一个职位只能投递一份简历
@@ -473,6 +477,7 @@ function add(app) {
 					if(rows.length > 0) {
 						introducer = rows[0].friend_screen_name;
 					}
+					// TODO 找不到需要从friends_timeline中找
 				}
 				callback(introducer);
 			});

@@ -4,10 +4,27 @@
 
 var STRING_FORMAT_REGEX = 
 	exports.STRING_FORMAT_REGEX = /\{\{([\w\s\.\(\)"',-\[\]]+)?\}\}/g;
+/**
+ * 字符串模板格式化，'{{hi}} world'.format({hi: 'hello'}) ==> 'hello world';
+ *
+ * @param {Object}values
+ * @return {String}
+ * @api public
+ */
 String.prototype.format = function(values) {
     return this.replace(STRING_FORMAT_REGEX, function(match, key) {
         return values[key] || eval('(values.' +key+')');
     });
+};
+
+/**
+ * 移除字符串两端的空白字符
+ *
+ * @return {String}
+ * @api public
+ */
+String.prototype.trim = function(){ 
+	return this.replace(/(^\s*)|(\s*$)/g, ""); 
 };
 
 var URL_REGEX = exports.URL_REGEX = /https?:\/\/[^\s]+/;
@@ -26,6 +43,47 @@ if(typeof Array.prototype.forEach === 'undefined') {
 		}
 	};
 }
+
+var LOG_TYPES = ['log', 'error'];
+for(var i=0; i<LOG_TYPES.length; i++) {
+	var logtype = LOG_TYPES[i];
+	this[logtype] = exports[logtype] = function(text){
+		if(typeof console !== 'undefined') {
+			console[logtype](text);
+		} else {
+			// TODO other output?! ie?
+		}
+	};
+}
+//log('this is log');
+//error('this is error');
+
+/**
+ * 判断是否自定类型的文件
+ * 
+ * @param {String}filename
+ * @param {String}types, 多个类型使用,号分隔，如 doc,docx,txt
+ * @return {Boolean} true or false
+ * @api public
+ */
+var is_filetype = exports.is_filetype = function(filename, types) {
+	types = types.split(',');
+	var pattern = '\.(';
+	for(var i=0; i<types.length; i++) {
+		if(0 != i) {
+			pattern += '|';
+		}
+		pattern += types[i].trim();
+	}
+	pattern += ')$';
+	return new RegExp(pattern, 'i').test(filename);
+};
+
+// TODO add unit test
+//console.log(is_filetype('abc.exe', 'txt,doc,xlt'))
+//console.log(is_filetype('abc.doc', 'txt,doc,xlt'))
+//console.log(is_filetype('abc', 'txt,doc,xlt'))
+//console.log(is_filetype('abc.TXT', 'txt,doc,xlt'))
 
 var VideoService = exports.VideoService = {
 	services: {
