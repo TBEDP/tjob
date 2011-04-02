@@ -1,60 +1,47 @@
+
+<link rel="stylesheet" href="/js/jquery-file-upload/jquery.fileupload-ui.css">
+
+<script type="text/javascript" src="/js/jquery-file-upload/jquery.fileupload.js"></script>
+<script type="text/javascript" src="/js/jquery-file-upload/jquery.fileupload-ui.js"></script>
+
 <script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
 <script type="text/javascript" src="/js/editor.js"></script>
-<script type="text/javascript">
-$(document).ready(function(){
-    $('#desc, #title').keyup(function(){
-        var text = '招聘#' + $('#title').val() + '#: ' + $('#desc').val();
-        if(text.length > 125){
-            text = text.substring(0, 123) + '...';
-        }
-        text += ' ' + 'http://t.cn/xxxxxx';
-        $('#weibo_preview').html(text);
-        $('#wordcount').html(140 - $('#weibo_preview').html().length);
-    });
-    $('#desc, #title').keyup(function(){
-        $('#save_job_btn').attr('disabled', false);
-        $('#desc, #title').each(function(){
-            if(!$(this).val()) {
-                $('#save_job_btn').attr('disabled', true);
-            }
-        });
-    }).keyup();
-    
-    $('#add_question_btn').click(function(){
-        $('#addition_question').toggle();
-        var need_question = $('#need_question').val();
-        $('#need_question').val(need_question == '0' ? '1' : '0')
-    });
-    
-    $('#video_text').keyup(function(){
-        $('#add_video_btn').attr('disabled', !$(this).val());
-    });
-    $('#add_video_btn').click(function(){
-        var html = util.VideoService.attempt($('#video_text').val());
-        if(html) {
-            $('#text').val($('#text').val() + html);
-        }
-    });
-});
-</script>
-<form method="post" action="/job/create">
-	<h3>微博预览 (剩余 <span id="wordcount">140</span>)</h3>
-	<p id="weibo_preview"></p>
-	<h3>职位名称</h3>
-	<input type="text" name="title" id="title" style="width: 100%;" value="${job.title}"  />
-	<h3>职位概要，请确保微博在140字以内，用于发布微博内容</h3>
-	<textarea rows="5" name="desc" id="desc" style="width: 100%;">${job.desc}</textarea>
-	<h3>职位详细描述及要求</h3>
-	<textarea class="tinymce" name="text" id="text" >${job.text}</textarea>
-	<br />
-	<label>视频URL: </label>
-	<input type="text" class="long" id="video_text" />&nbsp;&nbsp;
-	<input type="button" id="add_video_btn" disabled="disabled" value="添加视频" />
-	<br />
-	{{if job.id}}
-	<input type="hidden" name="id" value="${job.id}" />
-	{{/if}}
-	<br />
-	<input disabled="disabled" id="save_job_btn" 
-        type="submit" value="{{if job.id}}更新{{else}}发布{{/if}}招聘信息" />
-</form>
+<script type="text/javascript" src="/js/job/create.js"></script>
+
+<h3>微博预览 (剩余 <span id="wordcount">140</span>)</h3>
+<p id="weibo_preview" style="text-align:left;"></p>
+<h3>职位名称</h3>
+<input type="text" name="title" id="title" style="width: 98%;" value="${job.title}"  />
+<h3>职位概要，请确保微博在140字以内，用于发布微博内容</h3>
+<textarea class="text" rows="5" name="desc" id="desc" style="width: 100%;">${job.desc}</textarea>
+<div style="float: left;">
+	<form id="file_upload" action="/upload" style="float: left;width:80px;" method="POST" enctype="multipart/form-data">
+	    <input type="file" name="file" multiple=“multiple” />
+	    <button>Upload</button>
+	    <div>添加图片</div>
+	</form>
+	&nbsp;&nbsp;
+    <button id="add_video_btn">添加视频</button>
+</div>
+
+<table id="uploadfiles"></table>
+<div style="display:none; text-align:left;">
+    <span>请选择用于发微博的图片: </span>
+    <ul id="downloadfiles"></ul>
+</div>
+<br/>
+<h3>职位详细描述及要求</h3>
+<textarea class="tinymce" name="text" id="text" >${job.text}</textarea>
+<br />
+{{if job.id}}
+<input type="hidden" id="job_id" name="id" value="${job.id}" />
+{{/if}}
+<button id="save_job_btn">{{if job.id}}更新{{else}}发布{{/if}}招聘信息</button>
+<br />
+<div id="dialog-form" style="z-index: 10000;" title="添加视频">
+	<p>
+	   <label for="name">视频URL</label><br />
+	   <input type="text" style="width: 90%;" id="video_text" />
+	</p>
+	<p id="video_preview"></p>
+</div>

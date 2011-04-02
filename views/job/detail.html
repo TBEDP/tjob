@@ -1,6 +1,6 @@
 <script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
 <script type="text/javascript" src="/js/editor.js"></script>
-<script type="text/javascript" src="/js/job_detail.js"></script>
+<script type="text/javascript" src="/js/job/detail.js"></script>
 
 <script type='text/javascript' src='/js/jquery-autocomplete/lib/jquery.bgiframe.min.js'></script>
 <script type='text/javascript' src='/js/jquery-autocomplete/lib/thickbox-compressed.js'></script> 
@@ -21,7 +21,6 @@
         <h3>附加题目</h3>
         <p>{{html job.question.content}}</p>
         {{/if}}
-        
     </div>
     <div class="meta">
         <p class="links">
@@ -31,7 +30,7 @@
             {{if job.status == 0 && users.tsina.user_id == job.author_id}}
             <a href="/job/create?job=${job.id}">编辑信息</a>
             &nbsp;&nbsp;
-            <input type="button" class="close_job_btn" jobid="${job.id}" value="结束招聘" />
+            <button class="close_job_btn" jobid="${job.id}">结束招聘</button>
             &nbsp;&nbsp;
             {{/if}}
             |
@@ -58,28 +57,19 @@
                     {{/if}}
                     投递了简历 <a href="/download?p=${encodeURI(resume.filepath)}">${resume.filename}</a>
                     <br />
-                    <input type="button" id="update_resume_btn" value="我要更新简历" />
+                    <button id="update_resume_btn">我要更新简历</button>
                 </p>
                 {{/if}}
             <form id="upload_resume_form" {{if resume}}style="display:none;"{{/if}} method="post" action="/resume/upload/${job.id}" enctype="multipart/form-data">
                 <h3>招聘信息来源(从谁的微博知道此信息的?):</h3>
                 @<input type="text" id="introducer" name="introducer" size="20" />
-                {{if job.question}}
-		        <h3>回答附加题目:</h3>
-		        <input type="hidden" name="question_id" value="${job.question.id}" />
-			        {{if resume && resume.answer }}
-			        <input type="hidden" name="answer_id" value="${resume.answer.id}" />
-			        {{/if}}
-		        <textarea class="simple_tinymce" name="answer" id="answer">${resume && resume.answer ?resume.answer.content:''}</textarea>
-		        <br/>
-		        {{/if}}
 		        <h3>我想说说(对此职位的想法或者回答问题):</h3>
 		        <textarea class="simple_tinymce" name="comment" id="comment">${resume && resume.comment}</textarea>
                 <br/>
                 <h3>选择的要上传的简历：(说说和简历都不会对外公布)</h3>
                 <input id="resume" name="resume" type="file" accept="png,gif,jpg,jpeg,doc,docx,pdf,txt,wps" />
                 <br/><br/>
-                <input id="upload_btn" disabled="disabled" type="submit" value=" 提交简历 " /> 
+                <input id="upload_btn" type="submit" value=" 提交简历 " /> 
             </form>
             {{else}}
             <p>

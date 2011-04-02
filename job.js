@@ -122,8 +122,13 @@ var format_weibo_status = module.exports.format_weibo_status = function(params, 
 	}
 	status += ' ' + config.base_url + redirect_url;
 	// 微博meta数据，方便跟踪对应到职位相关信息
-	var annotations = JSON.stringify({job: job_id});
-	return {status: status, annotations: annotations};
+//	var annotations = '"job_' + job_id + '"';
+	var data = {status: status};
+	if(params.send_image) {
+		//{keyname: 'pic', file: filepath}
+		data.pic = path.join(config.filedir, 'upload', params.send_image);
+	}
+	return data;
 };
 
 function add(app) {
@@ -184,7 +189,8 @@ function add(app) {
 					[params.title, params.desc, params.text, params.id], 
 					function(err, r) {
 				var redirect_url = '/job/' + params.id;
-				res.redirect(redirect_url);
+//				res.redirect(redirect_url);
+				res.send(redirect_url);
 			});
 		} else { // 新增
 			_add_job(params, function(err, r) {
@@ -197,7 +203,8 @@ function add(app) {
 					tapi.update(update_data, function(data){
 						mysql_db.query('update job set weibo_id=?, weibo_info=?, last_check=now() where id=?', 
 								[data.id, JSON.stringify(data), job_id], function(err, result){
-							res.redirect(redirect_url);
+//							res.redirect(redirect_url);
+							res.send(redirect_url);
 						});
 					});
 				}
@@ -279,15 +286,6 @@ function add(app) {
 		});
 	});
 	
-	app.get('/download', function(req, res, next){
-		var filepath = req.query.p;
-		var filepath = path.join(filedir, filepath);
-		res.download(filepath, encodeURI(path.basename(filepath)), function(err){
-			// 取消下载
-			// do nothing.
-		});
-	});
-	
 	// 保存文件
 	function _save_file(from_path, to_path, callback) {
 		utillib.mkdirs(path.dirname(to_path), '777', function() {
@@ -338,7 +336,7 @@ function add(app) {
 			} else {
 				var filepath = files.resume ? files.resume.filename : null;
 				// 判断是否合法的文件类型
-				if(!utillib.is_filetype(filepath, constant.RESUME_FILETYPES)) {
+				if(filepath && !utillib.is_filetype(filepath, constant.RESUME_FILETYPES)) {
 					// 由于客户端已做判断，所以这样的情况都是恶意上传的，直接提示
 					res.send('文件格式错误: ' + filepath 
 						+ ' , 请上传' + constant.RESUME_FILETYPES + '格式的文件');

@@ -10,7 +10,8 @@ var express = require('express'),
 	utillib = require('./public/js/util.js'),
 	userutil = require('./user.js'),
 	config = require('./config.js'),
-	jobutil = require('./job.js');
+	uploadfile = require('./lib/uploadfile'),
+	job_handler = require('./job.js');
 
 //fixed express download cancel bug:
 require('http').ServerResponse.prototype.download = function(path, filename, fn){
@@ -69,7 +70,7 @@ userutil.auth(app);
 
 app.get('/', userutil.load_user_middleware, function(req, res){
 	var pagging = utillib.get_pagging(req);
-	jobutil.get_jobs('where status=0 order by id desc limit ?, ?', [pagging.offset, pagging.count], function(rows) {
+	job_handler.get_jobs('where status=0 order by id desc limit ?, ?', [pagging.offset, pagging.count], function(rows) {
 		var locals = {
 			jobs: rows,
 			page_count: pagging.count,
@@ -84,7 +85,7 @@ app.get('/', userutil.load_user_middleware, function(req, res){
 			rows.forEach(function(row) {
 				job_ids.push(row.id);
 			});
-			jobutil.check_likes(req.users.tsina.user_id, job_ids, function(likes){
+			job_handler.check_likes(req.users.tsina.user_id, job_ids, function(likes){
 				rows.forEach(function(row) {
 					row.user_like = likes[row.id];
 				});
@@ -121,11 +122,20 @@ app.get('/system_info', userutil.load_user_middleware, userutil.require_admin, f
 	});
 });
 
+// 设置文件上传
+var upload_dir = config.filedir + '/upload';
+utillib.mkdirs(upload_dir, '777', function(){
+	app.post('/upload', uploadfile.upload(upload_dir));
+	app.get('/down/:name', uploadfile.download(upload_dir, {field: 'name'}));
+	// 查看简历
+	app.get('/download', uploadfile.download(config.filedir, {field: 'p'}));
+});
+
 //app.get('/500', function(req, res){
 //	throw new Error('keyboard cat!');
 //});
 
-jobutil.add(app);
+job_handler.add(app);
 
 app.listen(config.port);
 console.log('web server start', config.base_url);

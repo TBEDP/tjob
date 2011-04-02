@@ -50,12 +50,12 @@ ul, ol, li {
 }
 
 a {
-	text-decoration: underline;
+	text-decoration: none;
 	color: #EF8116;
 }
 
 a:hover {
-	text-decoration: none;
+	text-decoration: underline;
 	color: #EF8116;
 }
 
@@ -151,42 +151,13 @@ a:hover {
 
 /* Search */
 
-#search {
-	height: 45px;
-	padding: 0px 0px 40px 0px;
-}
-
 #search form {
 	margin: 0;
-	padding: 12px 0px 0 0;
-}
-
-#search fieldset {
-	margin: 0;
-	padding: 0;
-	border: none;
-}
-
-#search input {
-	float: left;
-	font: 12px Georgia, "Times New Roman", Times, serif;
+	padding: 5px 0 5px 0;
 }
 
 #search-text {
-	width: 120px;
-	height: 18px;
-	padding: 3px 0 0 5px;
-	border: 1px solid #000000;
-	color: #000000;
-}
-
-#search-submit {
-	height: 21px;
-	margin-left: 10px;
-	padding: 0px 2px;
-	border: none;
-	background: #000000;
-	color: #FFFFFF;
+	
 }
 
 /* Page */
@@ -417,4 +388,22 @@ a.repost_user {
 }
 a.repost_user:hover {
     text-decoration: underline;
+}
+
+#pageloading {
+    position: fixed;
+    _position: absolute;
+    top: 5%;
+    right: 5%;
+    width: 80px;
+    padding: 2px;
+    text-align: center;
+    background: #c44;
+    color: #fff;
+    z-index: 999;
+}
+
+input.text {
+	margin-bottom: 5px;
+	padding: .4em;
 }

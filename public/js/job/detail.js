@@ -9,12 +9,24 @@ $(document).ready(function(){
     
     // 检测是否可以提交数据
     // 只要有一项有数据，就可以提交
-    var _check_can_submit = function() {
-    	var can_submit = false;
+//    var _check_can_submit = function() {
+//    	var can_submit = false;
+//    	var resume_filename = $('#resume').val();
+//    	if($('#comment').val()|| resume_filename || $('#answer').val() ) {
+//    		can_submit = true;
+//    	}
+//    	if(resume_filename) {
+//    		if(!util.is_filetype(resume_filename, constant.RESUME_FILETYPES)){
+//    			can_submit = false;
+//    			$('#resume').val('');
+//    			alert('只允许上传: ' + constant.RESUME_FILETYPES);
+//    		}
+//    	}
+//    	can_submit ? $('#upload_btn').show()
+//        	: $('#upload_btn').hide;
+//    };
+    $('#resume').change(function() {
     	var resume_filename = $('#resume').val();
-    	if($('#comment').val()|| resume_filename || $('#answer').val() ) {
-    		can_submit = true;
-    	}
     	if(resume_filename) {
     		if(!util.is_filetype(resume_filename, constant.RESUME_FILETYPES)){
     			can_submit = false;
@@ -22,27 +34,20 @@ $(document).ready(function(){
     			alert('只允许上传: ' + constant.RESUME_FILETYPES);
     		}
     	}
-    	if($('#answer').length == 1 && !$('#answer').val()) {
-    		can_submit = false;
-    	}
-    	can_submit ? $('#upload_btn').attr('disabled', false) 
-        	: $('#upload_btn').attr('disabled', true);
-    };
-    $('#resume').change(_check_can_submit);
+    });
     // 需要回答问题
     if($('#answer, #comment').length > 0) {
     	$('textarea.simple_tinymce').tinymce($.extend({}, editor_options, {
         	theme: 'simple',
-        	height: '200',
-        	onchange_callback: _check_can_submit
+        	height: '200'
+//        	,onchange_callback: _check_can_submit
         }));
     }
-    
-//    $('#upload_btn').click(function(){
-//    	if(!$('#resume').val()) {
-//    		$('#resume').attr('disabled', 'disabled');
-//    	}
-//    });
+    $('#upload_btn').click(function(){
+    	if(!$('#resume').val()) {
+    		$('#resume').attr('disabled', 'disabled');
+    	}
+    });
     
     $('.close_job_btn').click(function(){
         if(confirm('确定要结束此招聘信息？')){

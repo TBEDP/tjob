@@ -140,3 +140,5 @@ CREATE TABLE  `tjob`.`user_friends` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 执行 node fixed_job_repost_user_id.js 修复job_repost user_id格式不正确的问题
+
+

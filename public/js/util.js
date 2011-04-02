@@ -2,37 +2,43 @@
 
 (function(exports){
 
-var STRING_FORMAT_REGEX = 
-	exports.STRING_FORMAT_REGEX = /\{\{([\w\s\.\(\)"',-\[\]]+)?\}\}/g;
-/**
- * 字符串模板格式化，'{{hi}} world'.format({hi: 'hello'}) ==> 'hello world';
- *
- * @param {Object}values
- * @return {String}
- * @api public
- */
-String.prototype.format = function(values) {
-    return this.replace(STRING_FORMAT_REGEX, function(match, key) {
-        return values[key] || eval('(values.' +key+')');
-    });
-};
+if(String.prototype.format === undefined) {
+	var STRING_FORMAT_REGEX = 
+		exports.STRING_FORMAT_REGEX = /\{\{([\w\s\.\(\)"',-\[\]]+)?\}\}/g;
+	/**
+	 * 字符串模板格式化，'{{hi}} world'.format({hi: 'hello'}) ==> 'hello world';
+	 *
+	 * @param {Object}values
+	 * @return {String}
+	 * @api public
+	 */
+	String.prototype.format = function(values) {
+	    return this.replace(STRING_FORMAT_REGEX, function(match, key) {
+	        return values[key] || eval('(values.' +key+')');
+	    });
+	};
+}
 
-/**
- * 移除字符串两端的空白字符
- *
- * @return {String}
- * @api public
- */
-String.prototype.trim = function(){ 
-	return this.replace(/(^\s*)|(\s*$)/g, ""); 
-};
+if(String.prototype.trim === undefined) {
+	// javascript 1.8 support now
+	/**
+	 * 移除字符串两端的空白字符
+	 *
+	 * @return {String}
+	 * @api public
+	 */
+	String.prototype.trim = function(){ 
+		return this.replace(/(^\s*)|(\s*$)/g, ""); 
+	};
+}
 
-var URL_REGEX = exports.URL_REGEX = /https?:\/\/[^\s]+/;
-
-String.prototype.urlsearch = function() {
-	var m = URL_REGEX.exec(this);
-	return m ? m[0] : null;
-};
+if(String.prototype.urlsearch === undefined) {
+	var URL_REGEX = exports.URL_REGEX = /https?:\/\/[^\s]+/;
+	String.prototype.urlsearch = function() {
+		var m = URL_REGEX.exec(this);
+		return m ? m[0] : null;
+	};
+}
 
 // let ie support forEach
 if(typeof Array.prototype.forEach === 'undefined') {
@@ -55,35 +61,35 @@ for(var i=0; i<LOG_TYPES.length; i++) {
 		}
 	};
 }
-//log('this is log');
-//error('this is error');
 
 /**
  * 判断是否自定类型的文件
  * 
  * @param {String}filename
- * @param {String}types, 多个类型使用,号分隔，如 doc,docx,txt
+ * @param {String|Array}types, 多个类型使用,号分隔，
+ * 	如 'doc,docx,txt' or ['doc', 'docx', 'txt']
+ * @param {String}separator, default is `,`
  * @return {Boolean} true or false
  * @api public
  */
-var is_filetype = exports.is_filetype = function(filename, types) {
-	types = types.split(',');
-	var pattern = '\.(';
-	for(var i=0; i<types.length; i++) {
-		if(0 != i) {
-			pattern += '|';
-		}
-		pattern += types[i].trim();
+exports.is_filetype = function(filename, types, sep) {
+	if(typeof types === 'string') {
+		types = types.split(sep || ',');
 	}
-	pattern += ')$';
-	return new RegExp(pattern, 'i').test(filename);
+	var result = false;
+	var pattern = '';
+	for(var i=0; i<types.length; i++) {
+		var type = types[i].trim();
+		if(type) {
+			pattern += type + '|';
+		}
+	}
+	if(pattern) {
+		pattern = '[^\/\.\\s\|\\\\] *\.(' + pattern.substring(0, pattern.length - 1) + ')$';
+		result = new RegExp(pattern, 'i').test(filename);
+	}
+	return result;
 };
-
-// TODO add unit test
-//console.log(is_filetype('abc.exe', 'txt,doc,xlt'))
-//console.log(is_filetype('abc.doc', 'txt,doc,xlt'))
-//console.log(is_filetype('abc', 'txt,doc,xlt'))
-//console.log(is_filetype('abc.TXT', 'txt,doc,xlt'))
 
 var VideoService = exports.VideoService = {
 	services: {
@@ -192,7 +198,7 @@ var VideoService = exports.VideoService = {
 	}
 };
 
-var get_dict_length = exports.get_dict_length = function(dict){
+exports.get_dict_length = function(dict){
 	if(Object.keys) {
 		return Object.keys(dict).length;
 	} else {
@@ -204,7 +210,9 @@ var get_dict_length = exports.get_dict_length = function(dict){
 	}
 };
 
-//获取分页信息
+/**
+ * 获取分页信息
+ */
 exports.get_pagging = function(req, default_count) {
 	default_count = default_count || 10;
 	var offset = req.query.o || 0;
@@ -213,16 +221,16 @@ exports.get_pagging = function(req, default_count) {
 		if(offset < 0) {
 			offset = 0;
 		}
-	}catch(e){
+	} catch(e) {
 		offset = 0;
 	}
 	var count = req.query.c || default_count;
-	try{
+	try {
 		count = parseInt(count);
 		if(count > 100 || count <= 0) { // 最大100
 			count = default_count;
 		}
-	}catch(e){
+	} catch(e) {
 		count = default_count;
 	}
 	var next_offset = offset + count;
@@ -284,7 +292,7 @@ demo:
 	}, console], function(){
 		this.log('wait for done');
 	}, console);
-	
+ *
  */
 exports.waitfor = function(calls, finished_callback, finished_context){
 	var wait_count = calls.length;
@@ -310,13 +318,27 @@ exports.waitfor = function(calls, finished_callback, finished_context){
 //server only
 if(typeof require !== 'undefined') {
 	var path = require('path'),
-	fs = require('fs');
+	fs = require('fs'),
+	crypto = require('crypto');
+
+	exports.md5 = function(s, encoding) {
+		var h = crypto.createHash('md5');
+		h.update(s);
+		if(false) {
+			console.log(encoding);
+		}
+		return h.digest(encoding || 'hex');
+	};
 
 	//创建所有目录
 	var mkdirs = exports.mkdirs = function(dirpath, mode, callback) {
+		if(callback === undefined) {
+			callback = mode;
+		}
+		mode = String(mode || '766');
 		path.exists(dirpath, function(exists) {
 			if(exists) {
-				callback(dirpath);
+				callback();
 			} else {
 				//尝试创建父目录，然后再创建当前目录
 				mkdirs(path.dirname(dirpath), mode, function(){

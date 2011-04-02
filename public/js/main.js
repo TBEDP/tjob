@@ -14,6 +14,9 @@ var doing = {
 };
 
 $(document).ready(function(){
+	$("button, input:submit, a.button").button();
+	$("input[type=text], .text").addClass('text ui-widget-content ui-corner-all');
+	
 	var pathname = window.location.pathname;
     $('#menu ul li a').each(function(){
         if($(this).attr('href') == pathname){
