@@ -32,6 +32,12 @@ if(String.prototype.trim === undefined) {
 	};
 }
 
+
+//为字符串增加去除所有html tag和空白的字符的方法
+String.prototype.remove_html_tag = function() {
+	return this.replace(/(<.*?>|&nbsp;|\s)/ig, '');
+};
+
 if(String.prototype.urlsearch === undefined) {
 	var URL_REGEX = exports.URL_REGEX = /https?:\/\/[^\s]+/;
 	String.prototype.urlsearch = function() {

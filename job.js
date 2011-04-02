@@ -523,17 +523,18 @@ function add(app) {
 			sql += ' where status=?';
 			params.push(status);
 		}
-		if(req.query.job) {
+		var jobid = req.query.job;
+		if(jobid) {
 			if(sql.indexOf('where ') < 0) {
 				sql += ' where ';
 			} else {
 				sql += ' and ';
 			}
 			sql += ' job_id=?';
-			params.push(req.query.job);
+			params.push(jobid);
 		}
 		sql += ' limit ?, ?';
-		var pagging = utillib.get_pagging(req);
+		var pagging = utillib.get_pagging(req, 50);
 		params.push(pagging.offset, pagging.count);
 		mysql_db.query(sql, params, function(err, rows){
 			if(err) {
@@ -541,8 +542,9 @@ function add(app) {
 			} else {
 				var locals = {
 					title: '简历列表', 
+					jobid: jobid,
+					current_job: null,
 					resumes: rows,
-					job_id: req.query.job,
 					filter_status: status,
 					page_count: pagging.count,
 					prev_offset: pagging.prev_offset
@@ -572,6 +574,9 @@ function add(app) {
 							row.status_name = RESUME_STATUS[row.status];
 							row.filename = path.basename(row.filepath);
 						});
+						if(jobid && jobs.length > 0) {
+							locals.current_job = jobs[0];
+						}
 						res.render('resumelist.html', locals);
 					});
 				});
