@@ -1,0 +1,30 @@
+[submodule "deps/nodeunit"]
+	path = deps/nodeunit
+	url = git://github.com/caolan/nodeunit.git
+[submodule "deps/express"]
+	path = deps/express
+	url = git://github.com/visionmedia/express.git
+[submodule "deps/connect"]
+	path = deps/connect
+	url = git://github.com/senchalabs/connect.git
+[submodule "deps/jqtpl"]
+	path = deps/jqtpl
+	url = git://github.com/kof/node-jqtpl.git
+[submodule "deps/mime"]
+	path = deps/mime
+	url = git://github.com/bentomas/node-mime.git
+[submodule "deps/qs"]
+	path = deps/qs
+	url = git://github.com/visionmedia/node-querystring.git
+[submodule "deps/connect-form"]
+	path = deps/connect-form
+	url = git://github.com/visionmedia/connect-form.git
+[submodule "deps/formidable"]
+	path = deps/formidable
+	url = git://github.com/felixge/node-formidable.git
+[submodule "deps/mysql"]
+	path = deps/mysql
+	url = git://github.com/felixge/node-mysql.git
+[submodule "deps/node-weibo"]
+	path = deps/node-weibo
+	url = git://github.com/fengmk2/node-weibo.git

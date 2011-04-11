@@ -1,15 +1,15 @@
 // tjob web
 // fixed node module paths problem;
-require.paths.push('/usr/lib/node/');
+require.paths.unshift(__dirname + '/deps');
 
 var express = require('express'),
 	path = require('path'),
 	fs = require('fs'),
 	form = require('connect-form'),
-	tapi = require('node-weibo'),
+	config = require('./config.js'),
+	tapi = config.tapi,
 	utillib = require('./public/js/util.js'),
 	userutil = require('./user.js'),
-	config = require('./config.js'),
 	uploadfile = require('./lib/uploadfile'),
 	job_handler = require('./job.js');
 
@@ -32,6 +32,9 @@ require('http').ServerResponse.prototype.download = function(path, filename, fn)
 	    }
 	});
 };
+
+// set weibo appkey
+tapi.init('tsina', '4010445928', 'd119f62bfb70a4ba8d9b68bf14d6e45a');
 
 var app = express.createServer(
 	form({ keepExtensions: true })

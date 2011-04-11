@@ -2,8 +2,8 @@
 // 到job表 repost_id 为空的记录发送
 require.paths.push('/usr/lib/node/');
 
-var tapi = require('node-weibo'),
-	config = require('../config.js'),
+var config = require('./config.js'),
+	tapi = config.tapi,
 	format_weibo_status = require('../job.js').format_weibo_status,
 	fetch_user_friends = require('../user.js').fetch_user_friends,
 	tjob_user = config.tjob_user;

@@ -1,12 +1,12 @@
 // 职位逻辑
 var path = require('path'),
 	fs = require('fs'),
-	tapi = require('node-weibo'),
+	config = require('./config.js'),
+	tapi = config.tapi,
 	userutil = require('./user.js'),
 	utillib = require('./public/js/util.js'),
 	constant = require('./public/js/constant.js'),
 	mysql_db = require('./db.js').mysql_db,
-	config = require('./config.js'),
 	question_answer = require('./question.js');
 
 var filedir =config.filedir;

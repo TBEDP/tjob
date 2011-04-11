@@ -1,6 +1,6 @@
 // 处理用户认证相关逻辑
-var tapi = require('node-weibo'),
-	config = require('./config.js'),
+var config = require('./config.js'),
+	tapi = config.tapi,
 	utillib = require('./public/js/util.js'),
 	mysql_db = require('./db.js').mysql_db;
 

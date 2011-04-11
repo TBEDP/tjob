@@ -1,5 +1,9 @@
 var os = require('os'),
 	path = require('path');
+var weibo = require('node-weibo');
+
+weibo.init('tsina', '', '');
+exports.tapi = weibo.tapi;
 
 var debug = true;
 var port = module.exports.port = 8099;

@@ -1,10 +1,18 @@
 # TaoJob Web System base on [Nodejs](http://nodejs.org).
 
 ## Requires:
+ * [connect](https://github.com/senchalabs/connect)
  * [express](http://expressjs.com), web application.
  * [jqtpl](https://github.com/kof/node-jqtpl), html template engine.
  * [node-mysql](https://github.com/felixge/node-mysql), db client to connect the mysql.
  * [connect-form](https://github.com/visionmedia/connect-form), handle file uploading.
+
+## Add git submodule
+ * git submodule add git://github.com/visionmedia/node-querystring.git deps/qs
+ * git submodule add git://github.com/visionmedia/connect-form.git deps/connect-form
+ * git submodule add git://github.com/felixge/node-formidable.git deps/formidable
+ * git submodule add git://github.com/felixge/node-mysql.git deps/mysql
+ * git submodule add git://github.com/fengmk2/node-weibo.git deps/node-weibo
 
 ## Weibo Account
  * sina: [@淘job](http://t.sina.com.cn/tjob "淘job")
