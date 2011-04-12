@@ -33,9 +33,6 @@ require('http').ServerResponse.prototype.download = function(path, filename, fn)
 	});
 };
 
-// set weibo appkey
-tapi.init('tsina', '4010445928', 'd119f62bfb70a4ba8d9b68bf14d6e45a');
-
 var app = express.createServer(
 	form({ keepExtensions: true })
 );
@@ -63,10 +60,10 @@ app.use(express.errorHandler({ dumpExceptions: true }));
 
 // use jqtpl in express
 app.set("view engine", "html");
+app.register(".html", require("./support/jqtpl/lib/jqtpl.express"));
 app.set('view options', {
 	layout: 'layout.html'
 });
-app.register(".html", require("jqtpl"));
 
 // 用户认证
 userutil.auth(app);
@@ -140,7 +137,7 @@ utillib.mkdirs(upload_dir, '777', function(){
 
 job_handler.add(app);
 
-app.listen(config.port);
+app.listen(config.port, '127.0.0.1');
 console.log('web server start', config.base_url);
 
 //catch all exception

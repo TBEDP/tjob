@@ -2,11 +2,12 @@ var os = require('os'),
 	path = require('path');
 var weibo = require('node-weibo');
 
+// set weibo appkey
 weibo.init('tsina', '', '');
 exports.tapi = weibo.tapi;
 
 var debug = true;
-var port = module.exports.port = 8099;
+exports.port = 9999;
 var db_options = module.exports.db_options = {
 	host: 'localhost',
 	port: 3306,
@@ -15,7 +16,7 @@ var db_options = module.exports.db_options = {
 	database: 'tjob'
 };
 
-module.exports.tjob_user = {
+exports.tjob_user = {
 	"id":"1989184342",
 	"screen_name":"淘job","name":"淘job",
 	"province":"33", "city":"1",
@@ -32,18 +33,17 @@ module.exports.tjob_user = {
 	"user_id":"tsina:1989184342"
 };
 
-var address = 'taojob.tbdata.org';
+var host = 'taojob.tbdata.org';
 if(debug) {
 	// 请修改host文件
-	address = 'taojobtest.tbdata.org:' + port;
-	module.exports.tjob_user = {
+	host = 'taojobtest.tbdata.org';
+	exports.tjob_user = {
 		'screen_name': 'tjobtest',
 		'username': 'tjobtest@sina.cn',
 		'blogtype': 'tsina',
 		'password': '123456'
 	};
 }
-module.exports.ip = address;
-module.exports.base_url = 'http://' + address;
+exports.base_url = 'http://' + host;
 
-module.exports.filedir = path.join(__dirname, 'files');
+exports.filedir = path.join(__dirname, 'files');

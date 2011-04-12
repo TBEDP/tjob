@@ -198,9 +198,9 @@ function auth(app) {
 		if(referer.indexOf('/login/') >= 0) {
 			referer = '/';
 		}
-		tapi.get_authorization_url(user, auth_callback, function(auth_url, auth_user, text_status, error_code) {
+		tapi.get_authorization_url(user, auth_callback, function(auth_url, text_status, error_code) {
 			if(auth_url) {
-				var auth_info = JSON.stringify([auth_user.oauth_token_secret, referer]);
+				var auth_info = JSON.stringify([user.oauth_token_secret, referer]);
 				res.cookie('authinfo', auth_info, {path: '/'});
 				res.redirect(auth_url);
 			} else {
