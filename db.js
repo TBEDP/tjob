@@ -136,7 +136,12 @@ Client.prototype.get_objs = function(table, key, values, callback) {
 };
 
 var mysql_db = new Client(config.db_options);
-mysql_db.connect();
+mysql_db.connect(function(err) {
+    if(err) {
+        console.error('connect db ' + mysql_db.host + ' error: ' + err);
+        process.exit();
+    }
+});
 
 module.exports.mysql_db = mysql_db;
 
