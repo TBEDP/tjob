@@ -1,6 +1,6 @@
 // tjob web
 // fixed node module paths problem;
-require.paths.unshift(__dirname + '/deps');
+require.paths.unshift(__dirname + '/support');
 
 var express = require('express'),
 	path = require('path'),
