@@ -8,11 +8,16 @@
  * [connect-form](https://github.com/visionmedia/connect-form), handle file uploading.
 
 ## Add git submodule
- * git submodule add git://github.com/visionmedia/node-querystring.git deps/qs
- * git submodule add git://github.com/visionmedia/connect-form.git deps/connect-form
- * git submodule add git://github.com/felixge/node-formidable.git deps/formidable
- * git submodule add git://github.com/felixge/node-mysql.git deps/mysql
- * git submodule add git://github.com/fengmk2/node-weibo.git deps/node-weibo
+ * git submodule add http://github.com/visionmedia/node-querystring.git support/qs
+ * git submodule add http://github.com/visionmedia/express.git support/express
+ * git submodule add http://github.com/senchalabs/connect.git support/connect
+ * git submodule add http://github.com/kof/node-jqtpl.git support/jqtpl
+ * git submodule add http://github.com/bentomas/node-mime.git support/mime
+ * git submodule add http://github.com/visionmedia/connect-form.git support/connect-form
+ * git submodule add http://github.com/felixge/node-formidable.git support/formidable
+ * git submodule add http://github.com/felixge/node-mysql.git support/mysql
+ * git submodule add http://github.com/fengmk2/node-weibo.git support/node-weibo
+ * git submodule add http://github.com/caolan/nodeunit.git support/nodeunit
 
 ## Weibo Account
  * sina: [@淘job](http://t.sina.com.cn/tjob "淘job")
