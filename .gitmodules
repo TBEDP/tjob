@@ -4,3 +4,27 @@
 [submodule "support/express"]
 	path = support/express
 	url = http://github.com/visionmedia/express.git
+[submodule "support/qs"]
+	path = support/qs
+	url = http://github.com/visionmedia/node-querystring.git
+[submodule "support/connect"]
+	path = support/connect
+	url = http://github.com/senchalabs/connect.git
+[submodule "support/jqtpl"]
+	path = support/jqtpl
+	url = http://github.com/kof/node-jqtpl.git
+[submodule "support/mime"]
+	path = support/mime
+	url = http://github.com/bentomas/node-mime.git
+[submodule "support/connect-form"]
+	path = support/connect-form
+	url = http://github.com/visionmedia/connect-form.git
+[submodule "support/formidable"]
+	path = support/formidable
+	url = http://github.com/felixge/node-formidable.git
+[submodule "support/mysql"]
+	path = support/mysql
+	url = http://github.com/felixge/node-mysql.git
+[submodule "support/node-weibo"]
+	path = support/node-weibo
+	url = http://github.com/fengmk2/node-weibo.git
