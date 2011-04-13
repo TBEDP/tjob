@@ -34,7 +34,7 @@ function send_job_weibo(callback) {
 					var params = format_weibo_status(row, row.id);
 					var user = JSON.parse(rs[0].info);
 					params.user = user;
-					console.log(user.screen_name, params.status, row);
+					//console.log(user.screen_name, params.status, row);
 					tapi.update(params, function(data, error, res){
 						if(data && data.id) {
 							console.log(data.t_url, data.user.screen_name);
@@ -191,8 +191,8 @@ function fetch_job_repost(callback) {
 						}
 						var since_id = row.repost_since_id;
 						statues.forEach(function(item) {
-							console.log(item.user.screen_name, item.text);
-							console.log(item.t_url);
+							//console.log(item.user.screen_name, item.text);
+							//console.log(item.t_url);
 							sqls.push('insert into job_repost set id=?, source_id=?, user_id=?, screen_name=?, weibo_info=?, created_at=now() ' 
 								+ ' ON DUPLICATE KEY UPDATE source_id=values(source_id), user_id=values(user_id), screen_name=values(screen_name), weibo_info=values(weibo_info);');
 							if(!since_id || String(since_id) < String(item.id)) {
@@ -224,14 +224,14 @@ function fetch_job_repost(callback) {
 };
 
 function _fetch_friends(user, cursor, fetch_all, callback) {
-	console.log('fetching', user.screen_name);
+	//console.log('fetching', user.screen_name);
 	fetch_user_friends(user, 200, cursor, function(data) {
 	    if(fetch_all && data && data.next_cursor) {
 		    // TODO 递归？！
 		    console.log('fetch', user.screen_name, data.users.length, 'friends');
 		    _fetch_friends(user, data.next_cursor, true, callback);
 	    } else {
-		    console.log('fetch', user.screen_name, ' done');
+		    //console.log('fetch', user.screen_name, ' done');
 		    callback(data);
 	    }
 	});
