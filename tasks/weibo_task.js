@@ -226,14 +226,14 @@ function fetch_job_repost(callback) {
 function _fetch_friends(user, cursor, fetch_all, callback) {
 	console.log('fetching', user.screen_name);
 	fetch_user_friends(user, 200, cursor, function(data) {
-		console.log('fetch', user.screen_name, data.users.length, 'friends');
-		if(fetch_all && data.next_cursor) {
-			// TODO 递归？！
-			_fetch_friends(user, data.next_cursor, true, callback);
-		} else {
-			console.log('fetch', user.screen_name, ' done');
-			callback(data);
-		}
+	    if(fetch_all && data && data.next_cursor) {
+		    // TODO 递归？！
+		    console.log('fetch', user.screen_name, data.users.length, 'friends');
+		    _fetch_friends(user, data.next_cursor, true, callback);
+	    } else {
+		    console.log('fetch', user.screen_name, ' done');
+		    callback(data);
+	    }
 	});
 };
 
