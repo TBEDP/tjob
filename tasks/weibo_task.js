@@ -1,8 +1,8 @@
 // 招聘信息转发进程, 1分钟发送一次
 // 到job表 repost_id 为空的记录发送
-require.paths.push('/usr/lib/node/');
+require.paths.unshift(__dirname + '/../support');
 
-var config = require('./config.js'),
+var config = require('../config.js'),
 	tapi = config.tapi,
 	format_weibo_status = require('../job.js').format_weibo_status,
 	fetch_user_friends = require('../user.js').fetch_user_friends,
