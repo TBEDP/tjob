@@ -330,9 +330,6 @@ if(typeof require !== 'undefined') {
 	exports.md5 = function(s, encoding) {
 		var h = crypto.createHash('md5');
 		h.update(s);
-		if(false) {
-			console.log(encoding);
-		}
 		return h.digest(encoding || 'hex');
 	};
 
