@@ -3,7 +3,7 @@ var os = require('os'),
 var weibo = require('node-weibo');
 
 // set weibo appkey
-weibo.init('tsina', '', '');
+weibo.init('tsina', '4010445928', 'd119f62bfb70a4ba8d9b68bf14d6e45a');
 exports.tapi = weibo.tapi;
 
 var debug = true;

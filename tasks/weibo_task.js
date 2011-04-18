@@ -35,7 +35,7 @@ function send_job_weibo(callback) {
 					var user = JSON.parse(rs[0].info);
 					params.user = user;
 					//console.log(user.screen_name, params.status, row);
-					tapi.update(params, function(data, error, res){
+					tapi.update(params, function(error, data) {
 						if(data && data.id) {
 							console.log(data.t_url, data.user.screen_name);
 							mysql_db.query('update job set weibo_id=? where id=?', [data.id, row.id], function(){
@@ -43,8 +43,8 @@ function send_job_weibo(callback) {
 							});
 						} else {
 							// error: repeated weibo text
-							if(error && (error.indexOf('repeated weibo text') >= 0 
-									|| error.indexOf('"error":"40028:') >= 0)){
+							if(error && (error.message.indexOf('repeated weibo text') >= 0 
+									|| error.message.indexOf('"error":"40028:') >= 0)){
 								mysql_db.query('update job set weibo_id=0, repost_id=0 where id=?', [row.id], function(){
 									row_finished();
 								});
@@ -73,15 +73,15 @@ function repost_job_weibo(callback){
 			console.log('repost_job_weibo', rows.length, 'rows');
 			var job = rows[0];
 			tapi.repost({user: tjob_user, id: job.weibo_id, 
-					status:'推荐职位 #' + job.title + '#'}, function(data, error, res){
+					status:'推荐职位 #' + job.title + '#'}, function(error, data, res){
 				if(data && data.id) {
 					mysql_db.query('update job set repost_id=? where id=?', [data.id, job.id], function(){
 						callback();
 					});
 				} else {
 					// error: repeated weibo text
-					if(error && (error.indexOf('repeated weibo text') >= 0 
-							|| error.indexOf('"error":"40028:') >= 0)){
+					if(error && (error.message.indexOf('repeated weibo text') >= 0 
+							|| error.message.indexOf('"error":"40028:') >= 0)){
 						mysql_db.query('update job set repost_id=0 where id=?', [job.id], function(){
 							callback();
 						});
@@ -114,9 +114,10 @@ function job_total_count(callback) {
 			rows.forEach(function(job){
 				jobs[job.weibo_id] = job;
 			});
-			tapi.counts({user: tjob_user, ids: Object.keys(jobs).join(',')}, function(data){
-				if(data.error) {
-					console.error(data);
+			tapi.counts({user: tjob_user, ids: Object.keys(jobs).join(',')}, 
+					function(error, data) {
+				if(error) {
+					console.error('tapi.counts error:', error);
 					callback();
 				} else {
 					var sql = 'update job set check_same_count=?, fetch_repost=?, repost_count=?, comment_count=?, last_check={last_check} where id=?;';
@@ -182,7 +183,7 @@ function fetch_job_repost(callback) {
 				if(row.repost_since_id) {
 					params.since_id = row.repost_since_id;
 				}
-				tapi.repost_timeline(params, function(statues, error){
+				tapi.repost_timeline(params, function(error, statues){
 					if(error) {
 						console.error(error);
 					} else {
@@ -225,14 +226,14 @@ function fetch_job_repost(callback) {
 
 function _fetch_friends(user, cursor, fetch_all, callback) {
 	//console.log('fetching', user.screen_name);
-	fetch_user_friends(user, 200, cursor, function(data) {
+	fetch_user_friends(user, 200, cursor, function(err, data) {
 	    if(fetch_all && data && data.next_cursor) {
 		    // TODO 递归？！
 		    console.log('fetch', user.screen_name, data.users.length, 'friends');
 		    _fetch_friends(user, data.next_cursor, true, callback);
 	    } else {
 		    //console.log('fetch', user.screen_name, ' done');
-		    callback(data);
+		    callback(err, data);
 	    }
 	});
 };
@@ -260,7 +261,7 @@ function fetch_weibo_user_friends(callback) {
 					var info = JSON.parse(user.info);
 					Object.extend(user, info);
 					var fetch_all = user.fetch_friends_date == null; //没有爬取过，则是第一次爬取，爬全部的
-					_fetch_friends(user, -1, fetch_all, function(data){
+					_fetch_friends(user, -1, fetch_all, function(err, data){
 						mysql_db.query(update_fetch_date, [user.user_id], function(err, result){
 							if(err) {
 								console.error(err);

@@ -139,7 +139,7 @@ var get_user_friends = module.exports.get_user_friends = function(user_id, callb
  * @api public
  */
 var fetch_user_friends = 
-		module.exports.fetch_user_friends = function(user, count, cursor, callback){
+		module.exports.fetch_user_friends = function(user, count, cursor, callback) {
 	if(arguments.length == 2) {
 		// 如果使用默认参数，则第二个参数就是callback
 		callback = count;
@@ -151,10 +151,10 @@ var fetch_user_friends =
 	cursor = cursor == null ? -1 : cursor;
 	count = count == null ? 200 : count;
 	var params = {user: user, count: count, cursor: cursor};
-	tapi.friends(params, function(data, err, res){
+	tapi.friends(params, function(err, data, res){
 		if(err) {
 			console.error(err);
-			callback(data);
+			callback(err, data);
 		} else {
 			// TODO 保存到数据库
 			// data = {users: {}, next_cursor: x}
@@ -179,10 +179,10 @@ var fetch_user_friends =
 					if(err) {
 						console.error(err);
 					}
-					callback(data);
+					callback(null, data);
 				});
 			} else {
-				callback(data);
+				callback(err, data);
 			}
 		}
 	});
@@ -198,19 +198,19 @@ function auth(app) {
 		if(referer.indexOf('/login/') >= 0) {
 			referer = '/';
 		}
-		tapi.get_authorization_url(user, auth_callback, function(auth_url, text_status, error_code) {
+		tapi.get_authorization_url(user, auth_callback, function(err, auth_url) {
 			if(auth_url) {
 				var auth_info = JSON.stringify([user.oauth_token_secret, referer]);
 				res.cookie('authinfo', auth_info, {path: '/'});
 				res.redirect(auth_url);
 			} else {
-				res.send('新浪登录异常，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
+				res.send('新浪登录异常: ' + err.message +' ，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
 			}
 		});
 	});
 
 	// http://localhost:3000/callback/tsina?oauth_token=abb89bbf577a98fe8a3334f32f34dfa5&oauth_verifier=653225
-	app.get('/callback/:blogtype', function(req, res){
+	app.get('/callback/:blogtype', function(req, res, next){
 		var blogtype = req.params.blogtype;
 		var oauth_token = req.query.oauth_token;
 		var oauth_verifier = req.query.oauth_verifier;
@@ -222,11 +222,19 @@ function auth(app) {
 		var auth_info = JSON.parse(req.cookies.authinfo);
 		var referer = auth_info[1];
 		user.oauth_token_secret = auth_info[0];
-		tapi.get_access_token(user, function(auth_user) {
+		tapi.get_access_token(user, function(error, auth_user) {
 			res.cookie('authinfo', '', {path: '/'});
+			if(error) {
+				res.send('get_access_token 异常: ' + error.message +' ，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
+				return;
+			}
 			if(auth_user) {
 				// 获取用户信息并存储
-				tapi.verify_credentials(auth_user, function(t_user) {
+				tapi.verify_credentials(auth_user, function(error, t_user) {
+					if(error) {
+						res.send('verify_credentials 异常: ' + error.message +' ，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
+						return;
+					}
 					Object.extend(t_user, auth_user);
 					var user_id = blogtype + ':' + t_user.id;
 					t_user.user_id = user_id;
@@ -236,7 +244,7 @@ function auth(app) {
 						function(err, result) {
 							// affectedRows == 1 代表是insert，第一次获取将爬取用户好友信息
 							if(result.affectedRows == 1) {
-								fetch_user_friends(t_user, function(friends_data){
+								fetch_user_friends(t_user, function(err, friends_data){
 //									console.log('fetch friends', friends_data.users.length);
 								});
 							}
@@ -261,18 +269,6 @@ function auth(app) {
 		var name = _format_cookie_token_name(blogtype);
 		res.cookie(name, '', {path: '/'});
 		res.redirect(referer);
-//		var key = req.cookies[name];
-//		if(key) {
-//			redis_db.del(key, function(){
-//				// 302跳转无法删除cookie？
-////				res.clearCookie(name);
-//				res.cookie(name, '', {path: '/'});
-//				res.redirect(referer);
-//			});
-//		} else {
-//			res.clearCookie(name);
-//			res.redirect(referer);
-//		}
 	});
 	
 	app.get('/users', load_user_middleware, require_admin, function(req, res, next){

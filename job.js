@@ -189,24 +189,35 @@ function add(app) {
 					[params.title, params.desc, params.text, params.id], 
 					function(err, r) {
 				var redirect_url = '/job/' + params.id;
-//				res.redirect(redirect_url);
 				res.send(redirect_url);
 			});
 		} else { // 新增
 			_add_job(params, function(err, r) {
+				if(err) {
+					console.error('_add_job error:', err);
+				}
 				if(r && r.insertId) {
 					var job_id = r.insertId;
 					var redirect_url = '/job/' + job_id;
 					// 使用当前登录用户发一条微博
 					var update_data = format_weibo_status(params, job_id);
 					update_data.user = req.users.tsina;
-					tapi.update(update_data, function(data){
-						mysql_db.query('update job set weibo_id=?, weibo_info=?, last_check=now() where id=?', 
-								[data.id, JSON.stringify(data), job_id], function(err, result){
-//							res.redirect(redirect_url);
-							res.send(redirect_url);
-						});
+					tapi.update(update_data, function(err, data){
+						if(err) {
+							console.error('tapi.update error:', err);
+						}
+						if(data) {
+							mysql_db.query('update job set weibo_id=?, weibo_info=?, last_check=now() where id=?', 
+									[data.id, JSON.stringify(data), job_id], function(err, result) {
+								if(err) {
+									console.error('save weibo_info error:', err);
+								}
+							});
+						}
+						res.send(redirect_url);
 					});
+				} else {
+					res.send('');
 				}
 			});
 		}
@@ -621,7 +632,6 @@ function add(app) {
 		} else {
 			query = mysql_db.escape(query.replace(/\?/g, ''));
 			query = query.substring(1, query.length - 1); // remove '
-//			console.log('where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query));
 			get_jobs('where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query), [], function(rows){
 				locals.jobs = rows;
 				res.render('index.html', locals);

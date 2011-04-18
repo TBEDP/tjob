@@ -33,9 +33,7 @@ require('http').ServerResponse.prototype.download = function(path, filename, fn)
 	});
 };
 
-var app = express.createServer(
-	form({ keepExtensions: true })
-);
+var app = express.createServer(form({ keepExtensions: true, uploadDir: config.filedir }));
 
 // 一个月过期
 app.use(express.static(__dirname + '/public', {maxAge: 3600000 * 24 * 30}));
@@ -100,10 +98,14 @@ app.get('/', userutil.load_user_middleware, function(req, res){
 
 app.post('/tapi/counts', userutil.load_user_middleware, function(req, res){
 	if(req.users.tsina) {
-		tapi.counts({user: req.users.tsina, ids: req.body.ids}, function(data) {
+		// 已登录到用户，调用新浪api获取最新到数据
+		tapi.counts({user: req.users.tsina, ids: req.body.ids}, function(error, data) {
 			var counts = [];
 			if(data) {
 				counts = data;
+			}
+			if(error) {
+				console.error(error);
 			}
 			res.send(JSON.stringify(counts));
 		});
@@ -142,7 +144,6 @@ console.log('web server start', config.base_url);
 
 //catch all exception
 process.on('uncaughtException', function (err) {
-	var util = require('util');
 	console.error('Uncaught exception: ' + err);
 	console.error(err.message);
 	console.error(err.stack);
