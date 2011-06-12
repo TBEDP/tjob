@@ -223,7 +223,6 @@ function auth(app) {
 		var referer = auth_info[1];
 		user.oauth_token_secret = auth_info[0];
 		tapi.get_access_token(user, function(error, auth_user) {
-			res.cookie('authinfo', '', {path: '/'});
 			if(error) {
 				res.send('get_access_token 异常: ' + error.message +' ，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
 				return;
@@ -242,6 +241,9 @@ function auth(app) {
 							+ ' ON DUPLICATE KEY UPDATE `info`=VALUES(`info`), screen_name=values(screen_name);',
 							[user_id, blogtype, JSON.stringify(t_user), t_user.screen_name], 
 						function(err, result) {
+							if(err) {
+								return next(err);
+							}
 							// affectedRows == 1 代表是insert，第一次获取将爬取用户好友信息
 							if(result.affectedRows == 1) {
 								fetch_user_friends(t_user, function(err, friends_data){
@@ -250,6 +252,7 @@ function auth(app) {
 							}
 							var name = _format_cookie_token_name(blogtype);
 							// 保存30天
+							// res.cookie('authinfo', '', {path: '/'});
 							res.cookie(name, user_id, 
 								{path: '/', maxAge: 138000000});
 							res.redirect(referer);

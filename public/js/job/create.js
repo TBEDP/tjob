@@ -1,12 +1,12 @@
 $(document).ready(function(){
     $('#desc, #title').keyup(function(){
         var text = '招聘#' + $('#title').val() + '#: ' + $('#desc').val();
-        if(text.length > 125){
-            text = text.substring(0, 123) + '...';
-        }
+//        if(text.wlength() > 125){
+//            text = text.substring(0, 123) + '...';
+//        }
         text += ' ' + 'http://t.cn/xxxxxx';
         $('#weibo_preview').html(text);
-        $('#wordcount').html(140 - $('#weibo_preview').html().length);
+        $('#wordcount').html(140 - $('#weibo_preview').html().wlength());
     });
     $('#desc, #title').keyup(function(){
         $('#save_job_btn').show();

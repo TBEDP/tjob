@@ -117,9 +117,9 @@ var format_weibo_status = module.exports.format_weibo_status = function(params, 
 	var redirect_url = '/job/' + job_id;
 	// 使用当前登录用户发一条微博
 	var status = '招聘#' + params.title + '#: ' + params.desc;
-	if(status.length > 125) {
-		status = status.substring(0, 123) + '...';
-	}
+//	if(status.length > 125) {
+//		status = status.substring(0, 123) + '...';
+//	}
 	status += ' ' + config.base_url + redirect_url;
 	// 微博meta数据，方便跟踪对应到职位相关信息
 //	var annotations = '"job_' + job_id + '"';
@@ -180,7 +180,7 @@ function add(app) {
 		}
 	};
 	
-	app.post('/job/create', userutil.load_user_middleware, userutil.require_author, function(req, res) {
+	app.post('/job/create', userutil.load_user_middleware, userutil.require_author, function(req, res, next) {
 		var params = req.body;
 		params.author_id = req.cookies.tsina_token;
 		if(params.id) {
@@ -195,6 +195,7 @@ function add(app) {
 			_add_job(params, function(err, r) {
 				if(err) {
 					console.error('_add_job error:', err);
+					return next(err);
 				}
 				if(r && r.insertId) {
 					var job_id = r.insertId;
@@ -205,6 +206,7 @@ function add(app) {
 					tapi.update(update_data, function(err, data){
 						if(err) {
 							console.error('tapi.update error:', err);
+							return next(err);
 						}
 						if(data) {
 							mysql_db.query('update job set weibo_id=?, weibo_info=?, last_check=now() where id=?', 
@@ -446,9 +448,8 @@ function add(app) {
 		});
 	});
 	
-	
 	function _get_job_repost_screen_names(job_weibo_id, callback) {
-		mysql_db.query('select distinct(screen_name) from job_repost where source_id=?', 
+		mysql_db.query('select distinct(screen_name) from job_repost where source_id=? limit 100', 
 				[job_weibo_id], function(err, rows){
 			var names = [];
 			if(err) {
@@ -461,7 +462,6 @@ function add(app) {
 			callback(names);
 		});
 	};
-	
 	
 	/**
 	 * 猜测当前用户的推荐人

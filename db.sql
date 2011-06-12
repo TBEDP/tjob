@@ -141,4 +141,7 @@ CREATE TABLE  `tjob`.`user_friends` (
 
 -- 执行 node fixed_job_repost_user_id.js 修复job_repost user_id格式不正确的问题
 
-
+-- 6.12 add screen_name to user
+ALTER TABLE `tjob`.`user` ADD COLUMN `screen_name` varchar(200)   
+    COMMENT '显示名称' AFTER `user_id`;
+ALTER TABLE `tjob`.`user` ADD INDEX `screen_name`(`screen_name`);

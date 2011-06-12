@@ -80,8 +80,12 @@ function repost_job_weibo(callback){
 					});
 				} else {
 					// error: repeated weibo text
+					if(error && typeof error.message === 'object') {
+						error = error.message;
+					}
 					if(error && (error.message.indexOf('repeated weibo text') >= 0 
-							|| error.message.indexOf('"error":"40028:') >= 0)){
+							|| error.message.indexOf('"error":"40028:') >= 0 
+							|| error.message.indexOf('target weibo does not exist'))){
 						mysql_db.query('update job set repost_id=0 where id=?', [job.id], function(){
 							callback();
 						});
@@ -229,7 +233,7 @@ function _fetch_friends(user, cursor, fetch_all, callback) {
 	fetch_user_friends(user, 200, cursor, function(err, data) {
 	    if(fetch_all && data && data.next_cursor) {
 		    // TODO 递归？！
-		    console.log('fetch', user.screen_name, data.users.length, 'friends');
+		   // console.log('fetch', user.screen_name, data.users.length, 'friends');
 		    _fetch_friends(user, data.next_cursor, true, callback);
 	    } else {
 		    //console.log('fetch', user.screen_name, ' done');

@@ -32,6 +32,12 @@ if(String.prototype.trim === undefined) {
 	};
 }
 
+/**
+ * 宽字符长度计算，2个ascii字符算1个单位长度
+ */
+String.prototype.wlength = function() {
+	return Math.round(this.replace(/[^\x00-\xff]/g, "mm").length / 2);
+};
 
 //为字符串增加去除所有html tag和空白的字符的方法
 String.prototype.remove_html_tag = function() {
