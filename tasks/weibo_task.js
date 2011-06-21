@@ -1,6 +1,6 @@
 // 招聘信息转发进程, 1分钟发送一次
 // 到job表 repost_id 为空的记录发送
-require.paths.unshift(__dirname + '/../support');
+//require.paths.unshift(__dirname + '/../support');
 
 var config = require('../config.js'),
 	tapi = config.tapi,
