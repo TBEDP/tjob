@@ -42,33 +42,38 @@ var db = require('../db.js')
   , fs = require('fs');
 var mysql_db = db.mysql_db;
 var source_id = process.argv[2];
-var stream = fs.createWriteStream('reposts_' + source_id + '.txt', {flags: 'w', encoding: 'utf8'});
-
+var stream = fs.createWriteStream('../public/list_reposts/' + source_id + '.html', {flags: 'w', encoding: 'utf8'});
+var end_time = new Date(process.argv[3]).getTime() / 1000;
+stream.write('<!DOCTYPE html><head><title>参与转发抽奖的名单</title></head><body><style>table{border: 1px solid #C3C3C3;} td, th {border: 1px solid #C3C3C3;padding: 3px;vertical-align: top;} th {background-color: #E5EECC;}</style>');
 
 mysql_db.query('select * from job_repost where source_id=' + source_id, function(err, rows) {
 	if(err) {
 		throw err;
 	}
+	var needs = [];
 	for(var i = 0, len = rows.length; i < len; i++) {
 		var row = rows[i];
 		row.status = JSON.parse(row.weibo_info);
 		row.status.created_at = new Date(row.status.created_at);
 		row.weibo_time = row.status.created_at.getTime() / 1000;
-//		console.log(status);
-		//var created_at = new Date(status.created_at);
-		//console.log(status.id, created_at, created_at.getTime());
+		if(row.weibo_time < end_time) {
+			needs.push(row);
+		}
 	}
-	rows.sort(function(a, b) {
+	needs.sort(function(a, b) {
 		return a.weibo_time - b.weibo_time;
 	});
-	for(var i = 0, len = rows.length; i < len; i++) {
-		var row = rows[i];
-		var line = '楼' + (i + 1) + ': @' + row.status.user.screen_name 
-			+ ' 在 ' + row.status.created_at.format('yyyy-MM-dd hh:mm:ss') 
-			+ ' 转发参与抽奖, 转发内容: http://api.t.sina.com.cn/' + row.status.user.id +  '/statuses/' + row.status.id + '\n';
+	stream.write('<table cellspacing="0" cellpadding="0" border="1" width="100%"><tr><th>楼层</th><th>转发者</th><th>转发时间</th><th>转发微博</th></tr>');
+	for(var i = 0, len = needs.length; i < len; i++) {
+		var row = needs[i];
+		var link = 'http://api.t.sina.com.cn/' + row.status.user.id +  '/statuses/' + row.status.id;
+		var line = '<tr><td>' + (i + 1) + '</td><td>@' + row.status.user.screen_name 
+			+ '</td><td>' + row.status.created_at.format('yyyy-MM-dd hh:mm:ss') 
+			+ '</td><td><a target="_blank" href="' + link + '">' + link + '</a></td></tr>\n';
 		stream.write(line);
 		console.log(line.substring(0, line.length - 1));
 	}
+	stream.write('</table></body></html>');
 	mysql_db.end();
 	stream.end();
 });
