@@ -65,7 +65,7 @@ $(document).ready(function(){
         			like_count = parseInt(like_count) - 1;
         			$this.find('span:last').html(like_count);
         			$this.removeClass('unlike');
-        			$this.find('span:first').html('Like');
+        			$this.find('span:first').html('收藏');
         			doing.end($this);
         		});
     		} else {
@@ -73,7 +73,7 @@ $(document).ready(function(){
         			like_count = parseInt(like_count) + 1;
         			$this.find('span:last').html(like_count);
         			$this.addClass('unlike');
-        			$this.find('span:first').html('Unlike');
+        			$this.find('span:first').html('取消收藏');
         			doing.end($this);
         		});
     		}

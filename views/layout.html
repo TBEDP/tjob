@@ -34,7 +34,7 @@ $(document).ready(function(){
                     {{if !users.tsina.is_author && !users.tsina.is_admin }}
                     <li><a href="/resume/list/${users.tsina.user_id}">我的简历</a></li>
                     {{/if}}
-                    <li><a href="/job/likes/${users.tsina.user_id}">我喜欢</a></li>
+                    <li><a href="/job/likes/${users.tsina.user_id}">我的收藏</a></li>
 	                {{if users.tsina.is_author }}
 	                <li><a href="/resumes">查看简历</a></li>
 	                <li><a href="/job/create">发布职位信息</a></li>

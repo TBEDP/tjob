@@ -19,7 +19,7 @@
             |
             &nbsp;&nbsp;
             {{/if}}
-            <a href="javascript:void(0);" title="${job.like_count || 0}人喜欢" jobid="${job.id}" class="like_button ${job.user_like ? 'unlike' : ''}"><span>${job.user_like ? 'Unlike' : 'Like'}</span>(<span>${job.like_count || 0}</span>)</a>
+            <a href="javascript:void(0);" title="${job.like_count || 0}人收藏" jobid="${job.id}" class="like_button ${job.user_like ? 'unlike' : ''}"><span>${job.user_like ? '取消收藏' : '收藏'}</span>(<span>${job.like_count || 0}</span>)</a>
             &nbsp;&nbsp;
             <a href="/job/${job.id}#resume" title="${job.resume_count || 0}人投递" class="resume_count big_button">投递简历(<span>${job.resume_count}</span>)</a>
             &nbsp;&nbsp;

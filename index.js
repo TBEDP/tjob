@@ -115,7 +115,10 @@ app.post('/tapi/counts', userutil.load_user_middleware, function(req, res){
 });
 
 app.get('/system_info', userutil.load_user_middleware, userutil.require_admin, function(req, res){
-	tapi.rate_limit_status({user: config.tjob_user}, function(data) {
+	tapi.rate_limit_status({user: config.tjob_user}, function(err, data) {
+		if(err) {
+			return res.send(JSON.stringify(err));
+		}
 		data.user = config.tjob_user;
 		if(data.reset_time) {
 			data.reset_time = new Date(data.reset_time).format();
