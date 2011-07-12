@@ -18,8 +18,8 @@ var db_options = module.exports.db_options = {
 
 exports.tjob_user = { 
 	 id: 1927866610,
-	 screen_name: '淘宝技术招聘',
-	 name: '淘宝技术招聘',
+	 screen_name: 'tjobtest',
+	 name: 'tjobtest',
 	 province: '33',
 	 city: '1',
 	 location: '浙江 杭州',
@@ -38,9 +38,8 @@ exports.tjob_user = {
 	 geo_enabled: true,
 	 t_url: 'http://weibo.com/tbrd',
 	 blogtype: 'tsina',
-	 oauth_token_key: '487a7333eccb266656fa3e4807d3be0c',
-	 oauth_verifier: '219532',
-	 oauth_token_secret: '988f118b06fe878b7ca88a884c6c346b',
+	 oauth_token_key: "74f67950a44654f9fba4f7d471611605",
+	 oauth_token_secret: "29b39ff41e7fab8077474349e210cf22",
 	 authtype: 'oauth',
 	 user_id: 'tsina:1927866610' 
 };
@@ -49,12 +48,6 @@ var host = 'taojob.tbdata.org';
 if(debug) {
 	// 请修改host文件
 	host = 'taojobtest.tbdata.org:9999';
-	exports.tjob_user = {
-		'screen_name': 'tjobtest',
-		'username': 'tjobtest@sina.cn',
-		'blogtype': 'tsina',
-		'password': '123456'
-	};
 }
 exports.base_url = 'http://' + host;
 
