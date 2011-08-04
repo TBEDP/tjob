@@ -10,7 +10,8 @@
  * [eventproxy.js](https://github.com/shyvo1987/eventproxy.js), Far away deep callback.
  * [nstore-session](https://github.com/creationix/nstore-session), nStore Session Store for Connect.
 
-    $ npm install express connect-form mysql weibo nstore
+
+    $ npm install express connect-form mysql weibo nstore jqtpl
     
 ## Weibo Account
  * sina: [@淘job](http://t.sina.com.cn/tjob "淘job")

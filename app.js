@@ -78,7 +78,7 @@ app.use(express.logger(logger_options));
 
 // use jqtpl in express
 app.set("view engine", "html");
-app.register(".html", require("./lib/jqtpl/lib/jqtpl.express"));
+app.register(".html", require("jqtpl").express);
 app.set('view options', {
 	layout: 'layout.html'
 });

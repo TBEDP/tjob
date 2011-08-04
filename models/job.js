@@ -2,7 +2,8 @@
 var db = require('./db.js').mysql_db
   , User = require('./user')
   , config = require('../config.js')
-  , tapi = config.tapi;
+  , tapi = config.tapi
+  , path = require('path');
 
 var Job = module.exports = function Job(){
     
