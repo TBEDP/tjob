@@ -2,13 +2,13 @@
 // 到job表 repost_id 为空的记录发送
 //require.paths.unshift(__dirname + '/../support');
 
-var config = require('../config.js'),
+var config = require('../config'),
 	tapi = config.tapi,
-	format_weibo_status = require('../job.js').format_weibo_status,
-	fetch_user_friends = require('../user.js').fetch_user_friends,
+	EventProxy = require('../lib/eventproxy').EventProxy,
+	format_weibo_status = require('../models/job').format_weibo_status,
+	User = require('../models/user'),
 	tjob_user = config.tjob_user;
-var db = require('../db.js');
-var mysql_db = db.mysql_db;
+var mysql_db = require('../models/db').mysql_db;
 
 // 处理未发送成功的微博
 function send_job_weibo(callback) {
@@ -20,43 +20,59 @@ function send_job_weibo(callback) {
 			callback();
 			return;
 		}
-		console.log('send_job_weibo', rows.length, 'rows');
-		var finished = 0;
-		function row_finished(){
-			if(++finished == rows.length) {
-				callback();
-			}
+		console.log('send_job_weibo start', rows.length, 'rows');
+		var ep = new EventProxy();
+		var events = [];
+		for(var i = 0, len = rows.length; i < len; i++) {
+		    events.push('send' + i);
 		}
-		rows.forEach(function(row){
-			mysql_db.query('select * from user where user_id=?', 
-					[row.author_id], function(err, rs){
-				if(rs.length == 1) {
-					var params = format_weibo_status(row, row.id);
-					var user = JSON.parse(rs[0].info);
-					params.user = user;
-					//console.log(user.screen_name, params.status, row);
-					tapi.update(params, function(error, data) {
-						if(data && data.id) {
-							console.log(data.t_url, data.user.screen_name);
-							mysql_db.query('update job set weibo_id=? where id=?', [data.id, row.id], function(){
-								row_finished();
-							});
-						} else {
-							// error: repeated weibo text
-							if(error && (error.message.indexOf('repeated weibo text') >= 0 
-									|| error.message.indexOf('"error":"40028:') >= 0)){
-								mysql_db.query('update job set weibo_id=0, repost_id=0 where id=?', [row.id], function(){
-									row_finished();
-								});
-							} else {
-								console.error(data, error);
-								mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), row.id], function(){
-									row_finished();
-								});
-							}
-						}
-					});
-				}
+		events.push(function() {
+		    console.log('send_job_weibo done');
+		    callback();
+		});
+		ep.assign.apply(ep, events);
+		rows.forEach(function(row, index){
+		    var row_finished = function() {
+		        ep.emit('send' + index);
+		    };
+		    if(!row.author_id) {
+		        // 删除错误数据
+		        console.error('no user', row.author_id, 'delete job', row.id, row.title);
+		        mysql_db.query('delete from job where id=?', [row.id], function() {
+		            row_finished();
+	            });
+		        return;
+            }
+			User.get(row.author_id, function(err, user){
+			    if(err || !user) {
+			        console.error('no user', row.author_id);
+			        return row_finished();
+			    }
+			    var params = format_weibo_status(row, row.id);
+			    params.user = JSON.parse(user.info);
+                //console.log(user.screen_name, params.status, row);
+                tapi.update(params, function(error, data) {
+                    if(data && data.id) {
+                        console.log(data.t_url, data.user.screen_name);
+                        mysql_db.query('update job set weibo_id=? where id=?', [data.id, row.id], function(){
+                            row_finished();
+                        });
+                    } else {
+                        // error: repeated weibo text
+                        console.log(error, data);
+                        if(error && (error.message.indexOf('repeated weibo text') >= 0 
+                                || error.message.indexOf('"error":"40028:') >= 0)){
+                            mysql_db.query('update job set weibo_id=0, repost_id=0 where id=?', [row.id], function(){
+                                row_finished();
+                            });
+                        } else {
+                            console.error(data, error);
+                            mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), row.id], function(){
+                                row_finished();
+                            });
+                        }
+                    }
+                });
 			});
 		});
 	});
@@ -64,42 +80,40 @@ function send_job_weibo(callback) {
 
 // 处理转发任务
 function repost_job_weibo(callback){
-	mysql_db.query('select id, title, weibo_id from job where weibo_id is not null and repost_id is null limit 1',
-			function(err, rows){
-		if(err) {
-			console.error(err);
+    var sql = 'select id, title, weibo_id from job where weibo_id is not null and repost_id is null limit 1';
+	mysql_db.query(sql, function(err, rows){
+		if(err || rows.length === 0) {
+		    err && console.error(err);
+			return callback();
 		}
-		if(rows.length == 1) {
-			console.log('repost_job_weibo', rows.length, 'rows');
-			var job = rows[0];
-			tapi.repost({user: tjob_user, id: job.weibo_id, 
-					status:'推荐职位 #' + job.title + '#'}, function(error, data, res){
-				if(data && data.id) {
-					mysql_db.query('update job set repost_id=? where id=?', [data.id, job.id], function(){
-						callback();
-					});
-				} else {
-					// error: repeated weibo text
-					if(error && typeof error.message === 'object') {
-						error = error.message;
-					}
-					if(error && (error.message.indexOf('repeated weibo text') >= 0 
-							|| error.message.indexOf('"error":"40028:') >= 0 
-							|| error.message.indexOf('target weibo does not exist'))){
-						mysql_db.query('update job set repost_id=0 where id=?', [job.id], function(){
-							callback();
-						});
-					} else {
-						console.error(data, error);
-						mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), job.id], function(){
-							callback();
-						});
-					}
-				}
-			});
-		} else {
-			callback();
-		}
+		console.log('repost_job_weibo', rows.length, 'rows');
+        var job = rows[0];
+        tapi.repost({user: tjob_user, id: job.weibo_id, 
+                status:'推荐职位 #' + job.title + '#'}, function(error, data, res){
+            if(data && data.id) {
+                console.log(data.t_url);
+                mysql_db.query('update job set repost_id=? where id=?', [data.id, job.id], function(){
+                    callback();
+                });
+            } else {
+                // error: repeated weibo text
+                if(error && typeof error.message === 'object') {
+                    error = error.message;
+                }
+                if(error && (error.message.indexOf('repeated weibo text') >= 0 
+                        || error.message.indexOf('"error":"40028:') >= 0 
+                        || error.message.indexOf('target weibo does not exist'))){
+                    mysql_db.query('update job set repost_id=0 where id=?', [job.id], function(){
+                        callback();
+                    });
+                } else {
+                    console.error(data, error);
+                    mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), job.id], function(){
+                        callback();
+                    });
+                }
+            }
+        });
 	});
 };
 
@@ -230,7 +244,7 @@ function fetch_job_repost(callback) {
 
 function _fetch_friends(user, cursor, fetch_all, callback) {
 	//console.log('fetching', user.screen_name);
-	fetch_user_friends(user, 200, cursor, function(err, data) {
+	User.fetch_user_friends(user, 200, cursor, function(err, data) {
 	    if(fetch_all && data && data.next_cursor) {
 		    // TODO 递归？！
 		   // console.log('fetch', user.screen_name, data.users.length, 'friends');
@@ -281,14 +295,20 @@ function fetch_weibo_user_friends(callback) {
 	});
 };
 
-var tasks = [send_job_weibo, repost_job_weibo, job_total_count, 
-             fetch_job_repost, fetch_weibo_user_friends];
-var finished = 0;
-for(var i=0;i<tasks.length;i++){
-	var task = tasks[i];
-	task(function(){
-		if(++finished == tasks.length){ // 全部完成
-			process.exit();
-		}
-	});
-}
+var tasks = [
+     send_job_weibo, 
+     repost_job_weibo, 
+     job_total_count, 
+     fetch_job_repost, 
+     fetch_weibo_user_friends
+];
+var finished = 0, total = tasks.length;
+tasks.forEach(function(task, index) {
+    console.log('doing', task.name);
+    task(function() {
+        console.log('finished', task.name);
+        if(++finished == total){ // 全部完成
+            process.exit();
+        }
+    });
+});

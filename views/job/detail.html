@@ -24,10 +24,10 @@
     </div>
     <div class="meta">
         <p class="links">
-            {{if users.tsina && users.tsina.is_author}}
+            {{if current_user && current_user.is_author}}
             <a href="/resumes?status=all&job=${job.id}">查看简历(${job.resume_count})</a>
             &nbsp;&nbsp;
-            {{if job.status == 0 && users.tsina.user_id == job.author_id}}
+            {{if job.status == 0 && current_user.user_id == job.author_id}}
             <a href="/job/create?job=${job.id}">编辑信息</a>
             &nbsp;&nbsp;
             <button class="close_job_btn" jobid="${job.id}">结束招聘</button>
@@ -49,7 +49,7 @@
         <a name="resume" href="#resume"></a>
         <h2>投递简历</h2>
         {{if job.status == 0}}
-            {{if users.tsina}}
+            {{if current_user}}
                 {{if resume}}
                 <p>你已经在 ${resume.created_at.format()} 
                     {{if resume.introducer}}

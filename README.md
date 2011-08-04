@@ -6,25 +6,23 @@
  * [jqtpl](https://github.com/kof/node-jqtpl), html template engine.
  * [node-mysql](https://github.com/felixge/node-mysql), db client to connect the mysql.
  * [connect-form](https://github.com/visionmedia/connect-form), handle file uploading.
+ * [node-weibo](https://github.com/fengmk2/node-weibo), connect to weibo.
+ * [eventproxy.js](https://github.com/shyvo1987/eventproxy.js), Far away deep callback.
+ * [nstore-session](https://github.com/creationix/nstore-session), nStore Session Store for Connect.
 
-## Add git submodule
- * git submodule add http://github.com/visionmedia/node-querystring.git support/qs
- * git submodule add http://github.com/visionmedia/express.git support/express
- * git submodule add http://github.com/senchalabs/connect.git support/connect
- * git submodule add http://github.com/kof/node-jqtpl.git support/jqtpl
- * git submodule add http://github.com/bentomas/node-mime.git support/mime
- * git submodule add http://github.com/visionmedia/connect-form.git support/connect-form
- * git submodule add http://github.com/felixge/node-formidable.git support/formidable
- * git submodule add http://github.com/felixge/node-mysql.git support/mysql
- * git submodule add http://github.com/fengmk2/node-weibo.git support/node-weibo
- * git submodule add http://github.com/caolan/nodeunit.git support/nodeunit
-
+    $ npm install express connect-form mysql weibo nstore
+    
 ## Weibo Account
  * sina: [@淘job](http://t.sina.com.cn/tjob "淘job")
  * demo: [Taojob](http://taojob.tbdata.org "更多好职位等你，来淘宝工作吧")
+
+## Create MySQL tables
+
+    $ source ./db.sql;
  
 ## Start Web Script:
-    node index.js
+    
+    node server.js
     // some log come out.
 
 ## 如何吸引别人转发，如何保证信息的传播范围

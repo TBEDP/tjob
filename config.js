@@ -6,8 +6,9 @@ var weibo = require('weibo');
 weibo.init('tsina', '4010445928', 'd119f62bfb70a4ba8d9b68bf14d6e45a');
 exports.tapi = weibo.tapi;
 
-var debug = true;
+var debug = exports.debug = true;
 exports.port = 9999;
+exports.session_secret = 'I\'m a seesion secret. Please change me in production env.';
 var db_options = module.exports.db_options = {
 	host: 'localhost',
 	port: 3306,
