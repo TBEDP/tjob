@@ -91,11 +91,19 @@ $(document).ready(function(){
     	var send_image = $('input[name="send_image"]:checked').next().text();
     	var text = $('#text').val();
     	var job_id = $('#job_id').val();
+    	var tags = [];
+    	$('#tag_select .tag').each(function() {
+    	    var $tag = $(this);
+    	    if($tag.attr('checked')) {
+    	        tags.push($tag.val());
+    	    }
+    	});
     	var params = {
     		title: title,
     		desc: desc,
     		send_image: send_image,
     		text: text,
+    		tags: tags,
     		id: job_id
     	};
     	$(this).attr('disabled', true);

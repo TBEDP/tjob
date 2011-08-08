@@ -21,7 +21,7 @@ module.exports = function(app){
             if(rows.length == pagging.count) {
                 locals.next_offset = pagging.next_offset;
             }
-            var user = req.session.current_user;
+            var user = req.session.user;
             if(user && rows.length > 0) {
                 // 判断当前用户是否喜欢
                 var job_ids = [];
@@ -29,9 +29,12 @@ module.exports = function(app){
                     job_ids.push(rows[i].id);
                 }
                 Job.check_likes(user.user_id, job_ids, function(err, likes){
-                    rows.forEach(function(row) {
-                        row.user_like = likes[row.id];
-                    });
+                    if(likes) {
+                        for(var i = 0, len = rows.length; i < len; i++) {
+                            var row = rows[i];
+                            row.user_like = likes[row.id];
+                        }
+                    }
                     res.render('index.html', locals);
                 });
             } else {

@@ -145,3 +145,22 @@ CREATE TABLE  `tjob`.`user_friends` (
 ALTER TABLE `tjob`.`user` ADD COLUMN `screen_name` varchar(200)   
     COMMENT '显示名称' AFTER `user_id`;
 ALTER TABLE `tjob`.`user` ADD INDEX `screen_name`(`screen_name`);
+
+-- 8.4 add tag
+CREATE TABLE  `tjob`.`tag` (
+  `id` int(10) unsigned AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
+  `text` text COMMENT '描述',
+  `count` int(10) unsigned NOT NULL DEFAULT '0', 
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `tjob`.`tag_job` (
+  `id` int(10) unsigned AUTO_INCREMENT,
+  `job` int(10) unsigned,
+  `tag` int(10) unsigned,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `job_tag_id` (`job`,`tag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -8,6 +8,7 @@ var path = require('path')
   , constant = require('../public/js/constant.js')
   , User = require('../models/user')
   , Job = require('../models/job')
+  , Tag = require('../models/tag')
   , Resume = require('../models/resume')
   , userauth = require('./user')
   , db = require('../models/db').mysql_db;
@@ -17,51 +18,82 @@ module.exports = function(app){
     // 热门职位
     app.get('/job/hot', function(req, res, next){
         Job.get_hots(function(err, rows){
-            if(err) {
-                return next(err);
-            }
-            res.send(JSON.stringify(rows));
+            res.send(JSON.stringify(rows || []));
         });
     });
     
     // 添加职位信息
     app.get('/job/create', userauth.require_author, 
             function(req, res, next) {
-        if(req.query.job) {
-            Job.get(req.query.job, function(err, job){
+        var ep = new EventProxy();
+        ep.assign('job', 'tags', 'job_tags', function(job_args, tags_args, job_tags_args) {
+            var tags = tags_args[0], selected = job_tags_args[0];
+            if(tags && selected) {
+                for(var i = 0, len = tags.length; i < len; i++) {
+                    if(selected[tags[i].id]) {
+                        tags[i].checked = true;
+                    }
+                }
+            }
+            var locals = {
+                job: job_args[0],
+                title: job_args[1],
+                tags: tags
+            };
+            res.render('job/create.html', locals);
+        });
+        var job_id = req.query.job;
+        if(job_id) {
+            Job.get(job_id, function(err, job){
                 var user_id = req.session.user.user_id;
                 if(!job || job.author_id != user_id) {
-                    res.redirect('/');
-                } else {
-                    res.render('job/create.html', {
-                        title: '更新职位信息',
-                        job: job
-                    });
+                    ep.removeAllListeners();
+                    return res.redirect('/');
                 }
+                ep.emit('job', job, '更新职位信息');
+            });
+            Tag.get_job_tags(job_id, function(err, job_tags) {
+                var map = null;
+                if(job_tags) {
+                    map = {};
+                    for(var i = 0, len = job_tags.length; i < len; i++) {
+                        var t = job_tags[i];
+                        map[t.tag] = true;
+                    }
+                }
+                ep.emit('job_tags', map);
             });
         } else {
-            res.render('job/create.html', {
-                title: '发布职位信息',
-                job: {}
-            });
+            ep.emit('job', {}, '发布职位信息');
+            ep.emit('job_tags');
         }
+        Tag.list(function(err, tags) {
+            ep.emit('tags', tags || []);
+        });
     });
     
     app.post('/job/create', userauth.require_author, function(req, res, next) {
         var params = req.body;
         params.author_id = req.session.user.user_id;
+        var tags = params['tags[]'];
+        if(typeof tags === 'string') {
+            tags = [tags];
+        }
+        delete params['tags[]'];
         var job = {
             title: params.title,
             desc: params.desc,
             text: params.text,
             author_id: params.author_id
         };
-        if(params.id) {
+        var job_id = params.id;
+        if(job_id) {
             // 更新
-            Job.update(params.id, job, function(err, r) {
-                var redirect_url = '/job/' + params.id;
+            Job.update(job_id, job, function(err, r) {
+                var redirect_url = '/job/' + job_id;
                 res.send(redirect_url);
             });
+            Tag.add_job_tags(job_id, tags);
         } else { // 新增
             Job.insert(job, function(err, r) {
                 if(err) {
@@ -89,6 +121,7 @@ module.exports = function(app){
                         }
                         res.send(redirect_url);
                     });
+                    Tag.add_job_tags(job_id, tags);
                 } else {
                     res.send('no id');
                 }
@@ -148,20 +181,6 @@ module.exports = function(app){
         });
     });
     
-    // 更新
-    app.post('/job/:id', userauth.require_author, function(req, res, next){
-        var status = req.body.status || '0';
-        mysql_db.query('update job set status=? where id=? and author_id=?', 
-                [status, req.params.id, req.cookies.tsina_token],
-                function(err, result) {
-            if(err){
-                next(err);
-            } else {
-                res.send('1');
-            }
-        });
-    });
-    
     // 职位搜索
     app.get('/job/search', function(req, res, next){
         var query = req.query.q;
@@ -173,9 +192,12 @@ module.exports = function(app){
         if(!query) {
             res.render('index.html', locals);
         } else {
-            query = mysql_db.escape(query.replace(/\?/g, ''));
+            query = db.escape(query.replace(/\?/g, ''));
             query = query.substring(1, query.length - 1); // remove '
-            get_jobs('where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query), [], function(rows){
+            Job.query('where title like "%?%" or `desc` like "%?%" '.replace(/\?/g, query), [], function(err, rows){
+                if(err) {
+                    return next(err);
+                }
                 locals.jobs = rows;
                 res.render('index.html', locals);
             });

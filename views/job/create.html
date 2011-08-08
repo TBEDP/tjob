@@ -7,7 +7,12 @@
 <script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
 <script type="text/javascript" src="/js/editor.js"></script>
 <script type="text/javascript" src="/js/job/create.js"></script>
-
+<h3>选择职位标签</h3>
+<p id="tag_select">
+{{each(i, tag) tags}}
+    <span><input type="checkbox" class="tag" id="tag_${tag.id}" ${tag.checked ? 'checked="checked"': ''} value="${tag.id}" /><label for="tag_${tag.id}">${tag.name}</label></span>
+{{/each}}
+</p>
 <h3>微博预览 (剩余 <span id="wordcount">140</span>)</h3>
 <p id="weibo_preview" style="text-align:left;"></p>
 <h3>职位名称</h3>

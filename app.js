@@ -86,6 +86,7 @@ app.set('view options', {
 require('./routes/user')(app); // must first
 require('./routes/job')(app);
 require('./routes/resume')(app);
+require('./routes/tag')(app);
 require('./routes/site')(app);
 
 // 设置文件上传

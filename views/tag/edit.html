@@ -1,0 +1,12 @@
+
+<script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
+<script type="text/javascript" src="/js/editor.js"></script>
+
+<form action="/tag/${tag.id || 'create'}" method="post">
+<h3>Tag名称</h3>
+<input type="text" name="name" id="name" style="width: 48%;" value="${tag.name || ''}"  />
+<h3>Tag描述: 部门描述，此类职位的综合概括等</h3>
+<textarea class="tinymce" name="text" id="text" height="200">${tag.text}</textarea>
+<br/>
+<button id="save_job_btn">保存</button>
+</form>

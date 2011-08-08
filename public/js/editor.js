@@ -39,5 +39,12 @@ var editor_options = {
 };
 
 $(document).ready(function() {
-    $('textarea.tinymce').tinymce(editor_options);
+    $('textarea.tinymce').each(function() {
+        var height = $(this).attr('height');
+        var options = $.extend({}, editor_options);
+        if(height) {
+            options.height = height;
+        }
+        $(this).tinymce(options);
+    });
 });

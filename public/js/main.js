@@ -51,6 +51,14 @@ $(document).ready(function(){
     	});
     });
     
+    // 获取tags
+    $.getJSON('/tags', function(tags){
+        var $tags = $('#tags');
+        $.each(tags, function(i, tag) {
+            $tags.append('<li><a href="/tag/{{id}}">{{name}}({{count}})</a></li>'.format(tag));
+        });
+    });
+    
     // 我喜欢按钮
     $('.like_button').click(function(){
     	if(current_user_id) {

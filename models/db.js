@@ -117,4 +117,4 @@ mysql_db.connect(function(err) {
     }
 });
 
-module.exports.mysql_db = mysql_db;
+exports.mysql_db = mysql_db;

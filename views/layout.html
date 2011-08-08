@@ -38,6 +38,7 @@ $(document).ready(function(){
 	                {{if current_user.is_author }}
 	                <li><a href="/resumes">查看简历</a></li>
 	                <li><a href="/job/create">发布职位信息</a></li>
+	                <li><a href="/tag/create">增加标签</a></li>
 	                {{/if}}
                 {{/if}}
             </ul>
@@ -82,21 +83,15 @@ $(document).ready(function(){
                         </form>
                     </li>
                     <li>
+                        <h2>职位标签</h2>
+                        <ul id="tags">
+                        </ul>
+                    </li>
+                    <li>
                         <h2>热门职位</h2>
                         <ul id="hot_jobs">
                         </ul>
                     </li>
-                    <!-- 
-                    <li>
-                        <h2>职位分类</h2>
-                        <ul>
-                            <li><a href="#">技术研发</a></li>
-                            <li><a href="#">产品需求</a></li>
-                            <li><a href="#">测试</a></li>
-                            <li><a href="#">UED</a></li>
-                        </ul>
-                    </li>
-                    -->
                 </ul>
             </div>
             <!-- end div#sidebar -->
