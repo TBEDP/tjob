@@ -1,4 +1,5 @@
-var Client = require('mysql').Client,
+var mysql = require('mysql'),
+    Client = mysql.Client,
 	config = require('../config.js');
 
 var Literal = function(val) {
@@ -109,12 +110,12 @@ Client.prototype.get_objs = function(table, key, values, callback) {
     });
 };
 
-var mysql_db = new Client(config.db_options);
-mysql_db.connect(function(err) {
-    if(err) {
-        console.error('connect db ' + mysql_db.host + ' error: ' + err);
-        process.exit();
-    }
-});
+var mysql_db = mysql.createClient(config.db_options);
+//mysql_db.connect(function(err) {
+//    if(err) {
+//        console.error('connect db ' + mysql_db.host + ' error: ' + err);
+//        process.exit();
+//    }
+//});
 
 exports.mysql_db = mysql_db;
