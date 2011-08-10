@@ -255,7 +255,7 @@ function _fetch_friends(user, cursor, fetch_all, callback) {
 		   // console.log('fetch', user.screen_name, data.users.length, 'friends');
 		    _fetch_friends(user, data.next_cursor, true, callback);
 	    } else {
-		    console.error('_fetch_friends', user.screen_name, 'error');
+		    console.error('_fetch_friends', user.screen_name, 'error', err);
 		    callback(err);
 	    }
 	});
