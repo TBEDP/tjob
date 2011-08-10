@@ -59,14 +59,21 @@ function send_job_weibo(callback) {
                         });
                     } else {
                         // error: repeated weibo text
-                        console.log(error, data);
-                        if(error && (error.message.indexOf('repeated weibo text') >= 0 
-                                || error.message.indexOf('"error":"40028:') >= 0)){
+                        console.log(error, row.id, row.title);
+                        var error_message = null;
+                        if(error) {
+                            if(typeof error.message === 'string') {
+                                error_message = error.message;
+                            } else if(error.message && error.message.message) {
+                                error_message = error.message.message;
+                            }
+                        }
+                        if(error_message && (error_message.indexOf('repeated weibo text') >= 0 
+                                || error_message.indexOf('"error":"40028:') >= 0)){
                             mysql_db.query('update job set weibo_id=0, repost_id=0 where id=?', [row.id], function(){
                                 row_finished();
                             });
                         } else {
-                            console.error(data, error);
                             mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), row.id], function(){
                                 row_finished();
                             });
