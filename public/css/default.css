@@ -370,6 +370,7 @@ a.big_button {
     text-decoration: none;
     background-color: #EF8116;
     color: white;
+    border-radius: 3px;
 }
 
 a.big_button:hover {

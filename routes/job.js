@@ -46,7 +46,7 @@ module.exports = function(app){
         if(job_id) {
             Job.get(job_id, function(err, job){
                 var user_id = req.session.user.user_id;
-                if(!job || job.author_id != user_id) {
+                if(!job || job.author_id != user_id || !req.session.user.is_admin) {
                     ep.removeAllListeners();
                     return res.redirect('/');
                 }
