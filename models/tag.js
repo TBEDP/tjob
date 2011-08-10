@@ -24,7 +24,7 @@ Tag.list = function(callback) {
 };
 
 Tag.get_jobs = function(tag_id, pagging, callback) {
-    var sql = 'select * from job where id in (select job from tag_job where tag=?)';
+    var sql = 'select * from job where id in (select job from tag_job where tag=?) and status=0';
     db.query(sql, [tag_id], callback);
 };
 
