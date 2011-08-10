@@ -24,7 +24,7 @@
             {{if current_user && current_user.is_author}}
             <a href="/resumes?status=all&job=${job.id}">查看简历(${job.resume_count})</a>
             &nbsp;&nbsp;
-            {{if job.status == 0 && current_user && current_user.user_id == job.author_id}}
+            {{if job.status == 0 && current_user && (current_user.user_id == job.author_id || current_user.is_admin)}}
             <a href="/job/create?job=${job.id}">编辑信息</a>
             &nbsp;&nbsp;
             {{/if}}
@@ -35,9 +35,9 @@
             &nbsp;&nbsp;
             <a href="/job/${job.id}#resume" title="${job.resume_count || 0}人投递" class="resume_count big_button">投递简历(<span>${job.resume_count}</span>)</a>
             &nbsp;&nbsp;
-            <a href="${job.weibo_info.t_url}" target="_blank" class="repost_count">转发(<span>${job.repost_count}</span>)</a>
+            <a href="${job.weibo_info ? job.weibo_info.t_url : '#'}" target="_blank" class="repost_count">转发(<span>${job.repost_count}</span>)</a>
             &nbsp;&nbsp;
-            <a href="${job.weibo_info.t_url}#a_comment" target="_blank" class="comment_count">评论(<span>${job.comment_count}</span>)</a>
+            <a href="${job.weibo_info ? job.weibo_info.t_url : '#'}#a_comment" target="_blank" class="comment_count">评论(<span>${job.comment_count}</span>)</a>
         </p>
     </div>
 </div>
