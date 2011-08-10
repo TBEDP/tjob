@@ -193,5 +193,5 @@ module.exports = function(app){
     });
 };
 
-exports.require_author = require_author;
-exports.require_admin = require_admin;
+module.exports.require_author = require_author;
+module.exports.require_admin = require_admin;

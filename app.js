@@ -57,9 +57,8 @@ var app = express.createServer(
     , store: new nStoreSession({maxAge: MAX_AGE, dbFile: __dirname + "/sessions.db"})
   })
 //  , express.csrf()
-  , express.errorHandler({ dumpExceptions: true })
+  , express.errorHandler({ dumpExceptions: true, showStack: true })
 );
-
 var logger_options = {
 	format: ':http-version|:method|:url|:status|:response-time|:remote-addr|:referrer|:date|:user-agent'
 };
@@ -106,4 +105,5 @@ process.on('uncaughtException', function (err) {
 	console.error('Uncaught exception: ' + err);
 	console.error(err.message);
 	console.error(err.stack);
+	process.exit();
 });
