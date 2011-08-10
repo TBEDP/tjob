@@ -49,7 +49,7 @@ module.exports = function(app){
                     job_ids.push(jobs[i].id);
                 }
             }
-            if(jobs) {
+            if(user && job_ids) {
                 Job.check_likes(user.user_id, job_ids, function(_, likes){
                     if(likes) {
                         for(var i = 0, len = jobs.length; i < len; i++) {
