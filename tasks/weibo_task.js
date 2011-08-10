@@ -59,21 +59,18 @@ function send_job_weibo(callback) {
                         });
                     } else {
                         // error: repeated weibo text
-                        console.log(error, row.id, row.title);
-                        var error_message = null;
-                        if(error) {
-                            if(typeof error.message === 'string') {
-                                error_message = error.message;
-                            } else if(error.message && error.message.message) {
-                                error_message = error.message.message;
-                            }
+                        if(error && typeof error.message === 'object') {
+                            error = error.message;
                         }
-                        if(error_message && (error_message.indexOf('repeated weibo text') >= 0 
-                                || error_message.indexOf('"error":"40028:') >= 0)){
+                        if(error && (error.message.indexOf('repeated weibo text') >= 0 
+                                || error.message.indexOf('40028:') >= 0 
+                                || error.message.indexOf('40072:') >= 0 
+                                || error.message.indexOf('target weibo does not exist'))){
                             mysql_db.query('update job set weibo_id=0, repost_id=0 where id=?', [row.id], function(){
                                 row_finished();
                             });
                         } else {
+                            console.log(error, row.id, row.title);
                             mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), row.id], function(){
                                 row_finished();
                             });
@@ -108,13 +105,14 @@ function repost_job_weibo(callback){
                     error = error.message;
                 }
                 if(error && (error.message.indexOf('repeated weibo text') >= 0 
-                        || error.message.indexOf('"error":"40028:') >= 0 
+                        || error.message.indexOf('40028:') >= 0 
+                        || error.message.indexOf('40072:') >= 0 
                         || error.message.indexOf('target weibo does not exist'))){
                     mysql_db.query('update job set repost_id=0 where id=?', [job.id], function(){
                         callback();
                     });
                 } else {
-                    console.error(data, error);
+                    console.log(error, row.id, row.title);
                     mysql_db.query('update job set log=? where id=?', [JSON.stringify(data), job.id], function(){
                         callback();
                     });
@@ -257,8 +255,8 @@ function _fetch_friends(user, cursor, fetch_all, callback) {
 		   // console.log('fetch', user.screen_name, data.users.length, 'friends');
 		    _fetch_friends(user, data.next_cursor, true, callback);
 	    } else {
-		    //console.log('fetch', user.screen_name, ' done');
-		    callback(err, data);
+		    console.error('_fetch_friends', user.screen_name, 'error');
+		    callback(err);
 	    }
 	});
 };
