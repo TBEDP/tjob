@@ -57,15 +57,21 @@ $(document).ready(function(){
                     <li>
                        <h2>用户</h2>
                        <ul>
+                           {{if current_user }}
                            <li>
-                           {{if current_user }}[<a href="/logout/tsina">注销</a>] 
+                           
                                <img src="${current_user.profile_image_url}" />
                                <a id="current_user_link" href="${current_user.t_url}" target="_blank">@${current_user.screen_name}</a>
                                <input id="current_user_id" type="hidden" value="${current_user.user_id}" />
-                           {{else}}
-                               <a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
-                           {{/if}}
                            </li>
+                           <li>
+                               <a href="/logout/tsina">退出登录</a>
+                           </li>
+                           {{else}}
+                           <li>
+                               <a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
+                           </li>
+                           {{/if}}
                            {{if current_user && current_user.is_admin }}
 			               <li><a href="/system_info">系统信息</a></li>
 			               <li><a href="/users">用户管理</a></li>
