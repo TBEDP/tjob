@@ -39,7 +39,7 @@ module.exports = function(app){
                     current_user.is_author = user.role.indexOf('author') >= 0;
                     current_user.is_admin = user.role.indexOf('admin') >= 0;
                 }
-                if(!user.is_admin) {
+                if(!current_user.is_admin) {
                     current_user.is_admin = user.screen_name == config.tjob_user.screen_name;
                 }
                 req.session.user = current_user;

@@ -162,6 +162,16 @@ module.exports = function(app){
         });
     });
     
+    app.post('/job/:id', function(req, res, next) {
+        var job_id = req.params.id;
+        Job.update(job_id, {status: req.body.status}, function(err) {
+            if(err) {
+                return next(err);
+            }
+            res.send('1');
+        });
+    });
+    
     // 获取实时更新
     app.get('/job/:id/repost_users/:source_id', function(req, res, next){
         var data = {users: [], introducer: null}
