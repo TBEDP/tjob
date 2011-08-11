@@ -89,6 +89,7 @@ module.exports = function(app){
         var job_id = params.id;
         if(job_id) {
             // 更新
+            delete job.author_id; // 不修改作者
             Job.update(job_id, job, function(err, r) {
                 var redirect_url = '/job/' + job_id;
                 res.send(redirect_url);
