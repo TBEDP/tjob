@@ -186,8 +186,14 @@ module.exports = function(app) {
     });
     
     app.post('/resumes/update/:id', userauth.require_author, function(req, res, next){
-        var status = req.body.status;
-        Resume.update(req.params.id, {status: status}, function(err, result){
+        var data = {};
+        if(req.body.status) {
+            data.status = req.body.status;
+        }
+        if(req.body.remark) {
+            data.remark = req.body.remark;
+        }
+        Resume.update(req.params.id, data, function(err, result){
             if(err){
                 console.error(err);
                 return res.send('2');

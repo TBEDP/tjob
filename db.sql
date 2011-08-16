@@ -164,3 +164,6 @@ CREATE TABLE  `tjob`.`tag_job` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `job_tag_id` (`job`,`tag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 8.16 add remark
+alter table `tjob`.`job_resume` add column `remark` text after `status`;

@@ -9,6 +9,15 @@ $(document).ready(function(){
             $this.attr('disabled', '');
         });
     });
+    
+    $('textarea.resume_remark').change(function() {
+        var $this = $(this);
+        $this.css('border', '1px solid');
+        var id = $this.parent().parent().find('.resume_id').text();
+        $.post('/resumes/update/' + id, {remark: $this.val()}, function(data) {
+            $this.css('border', '2px solid green');
+        });
+    });
 });
 </script>
 <p>
@@ -33,11 +42,12 @@ $(document).ready(function(){
     <th>简历数</th>
     {{/if}}
     <th>投递时间</th>
+    <th>备注</th>
   </tr>
   {{each(i, resume) resumes}}
   <tr>
     <td><input type="checkbox" class="resume_status_cb" {{if resume.status == 1}}checked="checked"{{/if}} /></td>
-    <td>${resume.id}</td>
+    <td class="resume_id">${resume.id}</td>
     <td><a title="查看他投递的其他简历" href="/resume/list/${resume.user.user_id}">${resume.user.screen_name}</a></td>
     <td><a href="/download?p=${encodeURI(resume.filepath)}">${resume.filename}</a></td>
     {{if jobid}}
@@ -47,6 +57,7 @@ $(document).ready(function(){
     <td><a href="/resumes?job=${resume.job.id}&status=all">${resume.job.resume_count}</a></td>
     {{/if}}
     <td>${resume.created_at.format('yyyy-MM-dd hh:mm')}</td>
+    <td><textarea class="resume_remark">${resume.remark}</textarea></td>
   </tr>
   {{/each}}
 </table>
