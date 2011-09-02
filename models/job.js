@@ -98,7 +98,7 @@ Job.check_likes = function(user_id, job_ids, callback) {
 };
 
 Job.get_hots = function(callback) {
-    db.query('select id, title from job where status=0 order by like_count desc, resume_count desc, repost_count desc limit 10;', 
+    db.query('select id, title, `desc` from job where status=0 order by like_count desc, resume_count desc, repost_count desc limit 10;', 
         callback);
 };
 
