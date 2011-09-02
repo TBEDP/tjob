@@ -8,7 +8,8 @@ var express = require('express'),
 	tapi = config.tapi,
 	utillib = require('./public/js/util.js'),
 	uploadfile = require('./lib/uploadfile'),
-	nStoreSession = require('./lib/nstore-session');
+	RedisStore = require('connect-redis')(express);
+	//nStoreSession = require('./lib/nstore-session');
 
 //fixed express download cancel bug:
 require('http').ServerResponse.prototype.download = function(path, filename, fn){
@@ -54,7 +55,8 @@ var app = express.createServer(
   , express.bodyParser()
   , express.session({ 
       secret: config.session_secret
-    , store: new nStoreSession({maxAge: MAX_AGE, dbFile: __dirname + "/sessions.db"})
+    //, store: new nStoreSession({maxAge: MAX_AGE, dbFile: __dirname + "/sessions.db"})
+    , store: new RedisStore({host: config.session_host})
   })
 //  , express.csrf()
   , express.errorHandler({ dumpExceptions: true, showStack: true })

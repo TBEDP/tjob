@@ -151,42 +151,59 @@ module.exports = function(app){
 
     app.get('/job/:id', function(req, res, next) {
         var job_id = req.params.id;
-        var locals = {title: '职位信息', resume: null, job: null};
+        var tpl = 'job/detail.html', user = req.session.user;
+        var ep = new EventProxy();
+        ep.assign('job', 'tags', 'resume', 'likes', function(job_args, tags_args, resume_args, likes_args) {
+            var locals = {title: '职位信息', resume: null, job: null};
+            var job = job_args[0];
+            locals.job = job;
+            locals.resume = resume_args[0];
+            locals.tags = tags_args[0] || [];
+            var likes = likes_args[0];
+            if(likes) {
+                locals.job.user_like = likes[job.id];
+            }
+            res.render(tpl, locals);
+        });
+        if(user && user.user_id) {
+            // 如果用户已经登录，则判断用户是否提交过简历
+            Resume.get(job_id, user.user_id, function(err, resume) {
+                ep.emit('resume', resume);
+            });
+            Job.check_likes(user.user_id, [job_id], function(err, likes) {
+                ep.emit('likes', likes);
+            });
+        } else {
+            ep.emit('resume');
+            ep.emit('likes');
+        }
+        Tag.get_job_tags(job_id, function(err, tag_ids) {
+            var ids = [];
+            for(var i = 0, l = tag_ids.length; i < l; i++) {
+                ids.push(tag_ids[i].tag);
+            }
+            Tag.gets(ids, function(err, tags) {
+                ep.emit('tags', tags);
+            });
+        });
         Job.get(job_id, function(err, job) {
             if(err || !job) {
+                ep.removeAllListeners();
                 return next(err);
             }
-            locals.job = job;
-            var tpl = 'job/detail.html'
-              , user = req.session.user;
-            if(user && user.user_id) {
-                // 如果用户已经登录，则判断用户是否提交过简历
-                var ep = new EventProxy();
-                ep.assign("resume", "likes", function(resume_args, likes_args) {
-                    locals.resume = resume_args[0];
-                    var likes = likes_args[0];
-                    if(likes) {
-                        locals.job.user_like = likes[job.id];
-                    }
-                    res.render(tpl, locals);
-                });
-                Resume.get(job_id, user.user_id, function(err, resume) {
-                    ep.emit('resume', resume);
-                });
-                Job.check_likes(user.user_id, [job_id], function(err, likes) {
-                    ep.emit('likes', likes);
-                });
-            } else {
-                res.render(tpl, locals);
-            }
+            ep.emit('job', job);
         });
     });
     
     app.post('/job/:id', function(req, res, next) {
-        var job_id = req.params.id;
-        Job.update(job_id, {status: req.body.status}, function(err) {
+        var job_id = req.params.id, status = parseInt(req.body.status);
+        Job.update(job_id, {status: status}, function(err) {
             if(err) {
                 return next(err);
+            }
+            if(status === 1) {
+                // 完成, delete tags
+                Tag.add_job_tags(job_id, null);
             }
             res.send('1');
         });

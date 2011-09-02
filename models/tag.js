@@ -14,6 +14,10 @@ Tag.update = function(id, props, callback) {
     db.update('tag', 'id', props, callback);
 };
 
+Tag.delete = function(tag, callback) {
+    db.query('delete from tag where id=?;delete from tag_job where tag=?', [tag, tag], callback);
+};
+
 Tag.get = function(id, callback) {
     db.get_obj('tag', {id: id}, callback);
 };
@@ -26,6 +30,14 @@ Tag.list = function(callback) {
 Tag.get_jobs = function(tag_id, pagging, callback) {
     var sql = 'select * from job where id in (select job from tag_job where tag=?) and status=0';
     db.query(sql, [tag_id], callback);
+};
+
+Tag.gets = function(ids, callback){
+    if(!ids || ids.length == 0) {
+        return callback();
+    }
+    var qs = (new Array(ids.length)).join('?,') + '?';
+    db.query('select * from tag where id in (' + qs + ')', ids, callback);
 };
 
 Tag.update_count = function(tag_ids, callback) {
@@ -69,7 +81,6 @@ Tag.add_job_tags = function(job_id, tag_ids, callback) {
                 }
             }
         }
-//        console.log(old_tags, delete_tags, tag_ids)
         db.query('delete from tag_job where job=?', [job_id], function(err, result) {
             if(err) {
                 console.error(err);

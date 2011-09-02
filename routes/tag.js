@@ -9,7 +9,10 @@ var path = require('path')
 
 module.exports = function(app){
     app.get('/tag/create', userauth.require_author, function(req, res){
-        res.render('tag/edit.html', {tag: {}});
+        Tag.list(function(err, tags) {
+            tags = tags || [];
+            res.render('tag/edit.html', {tag: {}, tags: tags});
+        });
     });
     app.post('/tag/create', userauth.require_author, function(req, res, next){
         var tag = req.body;
@@ -69,7 +72,16 @@ module.exports = function(app){
             if(err) {
                 return next(err);
             }
-            res.render('tag/edit', {tag: tag});
+            res.render('tag/edit', {tag: tag, tags: null});
+        });
+    });
+    app.post('/tag/:id/delete', userauth.require_author, function(req, res, next){
+        var tag_id = req.params.id;
+        Tag.delete(tag_id, function(err, result) {
+            if(err) {
+                return next(err);
+            }
+            res.redirect('/');
         });
     });
     app.post('/tag/:id', userauth.require_author, function(req, res, next){
@@ -87,8 +99,15 @@ module.exports = function(app){
     });
     app.get('/tags', function(req, res) {
         Tag.list(function(err, tags) {
-            tags = tags || [];
-            res.send(JSON.stringify(tags));
+            var need = [];
+            if(tags) {
+                for(var i = 0, l = tags.length; i < l; i++) {
+                    if(tags[i].count > 0) {
+                        need.push(tags[i]);
+                    }
+                }
+            }
+            res.send(JSON.stringify(need));
         });
     });
 };

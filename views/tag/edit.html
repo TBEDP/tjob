@@ -2,11 +2,31 @@
 <script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
 <script type="text/javascript" src="/js/editor.js"></script>
 
+{{if tags && tags.length > 0}}
+<h2>现有标签</h2>
+<p>
+{{each(i, tag) tags}}
+<a href="/tag/${tag.id}">${tag.name}(${tag.count})</a>&nbsp;&nbsp;
+{{/each}}
+</p>
+<br/>
+{{/if}}
+
+<h2>标签编辑</h2>
 <form action="/tag/${tag.id || 'create'}" method="post">
 <h3>Tag名称</h3>
 <input type="text" name="name" id="name" style="width: 48%;" value="${tag.name || ''}"  />
+<h3>Tag logo信息，会附在职位描述下面，直接编辑HTML信息</h3>
+<textarea class="tinymce" name="summary" id="summary" height="200">${tag.summary}</textarea>
 <h3>Tag描述: 部门描述，此类职位的综合概括等</h3>
-<textarea class="tinymce" name="text" id="text" height="600">${tag.text}</textarea>
+<textarea class="tinymce" name="text" id="text" height="500">${tag.text}</textarea>
 <br/>
-<button id="save_job_btn">保存</button>
+<button>${!tag.id ? "添加" : "更新"}标签</button>
 </form>
+
+{{if current_user.is_admin && tag.id}}
+<br/>
+<form action="/tag/${tag.id}/delete" method="post">
+<button>删除此标签</button>
+</form>
+{{/if}}
