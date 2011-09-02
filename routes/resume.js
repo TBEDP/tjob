@@ -90,7 +90,7 @@ module.exports = function(app) {
                 return next(err);
             }
             var locals =  {
-                title: '我的简历', 
+                title: resume_user.screen_name + ' 的简历', 
                 resume_user: resume_user,
                 resumes: []
             };

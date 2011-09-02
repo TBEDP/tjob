@@ -12,7 +12,7 @@ var mysql_db = require('../models/db').mysql_db;
 
 // 处理未发送成功的微博
 function send_job_weibo(callback) {
-	mysql_db.query('select * from job where weibo_id is null or weibo_id="" limit 10', function(err, rows){
+	mysql_db.query('select * from job where (weibo_id is null or weibo_id="") and repost_id is null limit 10', function(err, rows){
 		if(err) {
 			console.error(err);
 		}

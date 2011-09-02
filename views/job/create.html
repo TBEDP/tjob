@@ -41,6 +41,8 @@
 {{if job.id}}
 <input type="hidden" id="job_id" name="id" value="${job.id}" />
 {{/if}}
+<input type="checkbox" ${job.sync_weibo ? 'checked="checked"' : ''} id="sync_weibo" name="sync_weibo" value="sync_weibo" /><label for="sync_weibo">同步发送微博</label>
+&nbsp;&nbsp;&nbsp;&nbsp;
 <button id="save_job_btn">{{if job.id}}更新{{else}}发布{{/if}}招聘信息</button>
 <br />
 <div id="dialog-form" style="z-index: 10000;" title="添加视频">

@@ -106,6 +106,9 @@ $(document).ready(function(){
     		tags: tags,
     		id: job_id
     	};
+    	if($('#sync_weibo').attr('checked')) {
+    	    params.sync_weibo = true;
+    	}
     	$(this).attr('disabled', true);
     	$.post('/job/create', params, function(redirect_url){
     		window.location = redirect_url;

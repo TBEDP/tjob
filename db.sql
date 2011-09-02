@@ -151,6 +151,7 @@ CREATE TABLE  `tjob`.`tag` (
   `id` int(10) unsigned AUTO_INCREMENT,
   `name` varchar(100) DEFAULT NULL,
   `text` text COMMENT '描述',
+  `summary` text COMMENT 'tag logo等',
   `count` int(10) unsigned NOT NULL DEFAULT '0', 
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -167,3 +168,6 @@ CREATE TABLE  `tjob`.`tag_job` (
 
 -- 8.16 add remark
 alter table `tjob`.`job_resume` add column `remark` text after `status`;
+
+-- 9.2 add tag summary
+alter table `tjob`.`tag` add column `summary` text after `text`;

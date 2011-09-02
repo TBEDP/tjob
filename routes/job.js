@@ -50,6 +50,7 @@ module.exports = function(app){
                     ep.removeAllListeners();
                     return res.redirect('/');
                 }
+                job.sync_weibo = job.repost_id !== '0';
                 ep.emit('job', job, '更新职位信息');
             });
             Tag.get_job_tags(job_id, function(err, job_tags) {
@@ -64,7 +65,7 @@ module.exports = function(app){
                 ep.emit('job_tags', map);
             });
         } else {
-            ep.emit('job', {}, '发布职位信息');
+            ep.emit('job', {sync_weibo: true}, '发布职位信息');
             ep.emit('job_tags');
         }
         Tag.list(function(err, tags) {
@@ -86,13 +87,27 @@ module.exports = function(app){
             text: params.text,
             author_id: params.author_id
         };
+        if(!params.sync_weibo) {
+            job.repost_id = '0'; // 设置为0，让计划认为也不转发
+        } else {
+            job.repost_id = null;
+        }
         var job_id = params.id;
         if(job_id) {
             // 更新
             delete job.author_id; // 不修改作者
-            Job.update(job_id, job, function(err, r) {
-                var redirect_url = '/job/' + job_id;
-                res.send(redirect_url);
+            Job.get(job_id, function(err, obj){
+                if(err || !obj) {
+                    return next(err);
+                }
+                if(obj.repost_id !== '0' && obj.repost_id !== null) {
+                    // 已经转发，不能设置 repost_id
+                    delete job.repost_id;
+                }
+                Job.update(job_id, job, function(err, r) {
+                    var redirect_url = '/job/' + job_id;
+                    res.send(redirect_url);
+                });
             });
             Tag.add_job_tags(job_id, tags);
         } else { // 新增
@@ -103,25 +118,29 @@ module.exports = function(app){
                 if(r && r.insertId) {
                     var job_id = r.insertId;
                     var redirect_url = '/job/' + job_id;
-                    // 使用当前登录用户发一条微博
-                    var update_data = Job.format_weibo_status(params, job_id);
-                    update_data.user = req.session.user;
-                    tapi.update(update_data, function(err, data){
-                        if(err) {
-                            console.error('tapi.update error:', err);
-                            return next(err);
-                        }
-                        if(data) {
-                            var props = {weibo_id: data.id, weibo_info: JSON.stringify(data)};
-                            props.last_check = db.literal('now()');
-                            Job.update(job_id, props, function(err, result) {
-                                if(err) {
-                                    console.error('save weibo_info error:', err);
-                                }
-                            });
-                        }
+                    if(params.sync_weibo) {
+                     // 使用当前登录用户发一条微博
+                        var update_data = Job.format_weibo_status(params, job_id);
+                        update_data.user = req.session.user;
+                        tapi.update(update_data, function(err, data){
+                            if(err) {
+                                console.error('tapi.update error:', err);
+                                return next(err);
+                            }
+                            if(data) {
+                                var props = {weibo_id: data.id, weibo_info: JSON.stringify(data)};
+                                props.last_check = db.literal('now()');
+                                Job.update(job_id, props, function(err, result) {
+                                    if(err) {
+                                        console.error('save weibo_info error:', err);
+                                    }
+                                });
+                            }
+                            res.send(redirect_url);
+                        });
+                    } else {
                         res.send(redirect_url);
-                    });
+                    }
                     Tag.add_job_tags(job_id, tags);
                 } else {
                     res.send('no id');

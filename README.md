@@ -7,11 +7,11 @@
  * [node-mysql](https://github.com/felixge/node-mysql), db client to connect the mysql.
  * [connect-form](https://github.com/visionmedia/connect-form), handle file uploading.
  * [node-weibo](https://github.com/fengmk2/node-weibo), connect to weibo.
- * [eventproxy.js](https://github.com/shyvo1987/eventproxy.js), Far away deep callback.
+ * [eventproxy](https://github.com/JacksonTian/eventproxy), Far away deep callback.
  * [nstore-session](https://github.com/creationix/nstore-session), nStore Session Store for Connect.
 
 
-    $ npm install express connect-form mysql weibo nstore jqtpl
+    $ npm install express connect-form mysql weibo nstore jqtpl EventProxy.js
     
 ## Weibo Account
  * sina: [@淘job](http://t.sina.com.cn/tjob "淘job")
