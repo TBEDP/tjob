@@ -26,7 +26,7 @@ module.exports = function(app){
             res.redirect('/');
         });
     });
-    app.get('/tag/:id', function(req, res, next){
+    app.get('/tag/:id.:format?', function(req, res, next){
         var tag_id = req.params.id;
         var ep = new EventProxy();
         ep.assign('tag', 'jobs', function(tag_args, jobs_args) {
@@ -34,10 +34,15 @@ module.exports = function(app){
             if(err) {
                 return next(err);
             }
-            res.render('index', {
+            var locals = {
                 tag: tag_args[1],
                 jobs: jobs_args[1]
-            });
+            };
+            if(req.params.format === 'json') {
+                res.json(locals);
+            } else {
+                res.render('index', locals);
+            }
         });
         Tag.get(tag_id, function(err, tag) {
             ep.emit('tag', err, tag);
