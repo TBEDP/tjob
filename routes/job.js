@@ -18,7 +18,12 @@ module.exports = function(app){
     // 热门职位
     app.get('/job/hot', function(req, res, next){
         Job.get_hots(function(err, rows){
-            res.send(JSON.stringify(rows || []));
+            var jobs = rows || [], host = req.headers['host'];
+            for(var i = 0, l = jobs.length; i < l; i++) {
+                var job = jobs[i];
+                job.url = 'http://' + host + '/job/' + job.id;
+            }
+            res.send(JSON.stringify(jobs));
         });
     });
     

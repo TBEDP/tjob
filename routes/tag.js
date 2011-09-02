@@ -34,11 +34,27 @@ module.exports = function(app){
             if(err) {
                 return next(err);
             }
+            var jobs = jobs_args[1] || [];
             var locals = {
                 tag: tag_args[1],
-                jobs: jobs_args[1]
+                jobs: jobs
             };
             if(req.params.format === 'json') {
+                var host = req.headers['host'];
+                for(var i = 0, l = jobs.length; i < l; i++) {
+                    var job = jobs[i];
+                    jobs[i] = {
+                        url: 'http://' + host + '/job/' + job.id,
+                        title: job.title,
+                        id: job.id,
+                        created_at: job.created_at,
+                        updated_at: job.updated_at
+                    };
+                }
+                if(locals.tag) {
+                    delete locals.tag.text;
+                    delete locals.tag.summary;
+                }
                 res.json(locals);
             } else {
                 res.render('index', locals);
