@@ -46,8 +46,8 @@ module.exports = function(app){
                     jobs[i] = {
                         url: 'http://' + host + '/job/' + job.id,
                         title: job.title,
+                        desc: job.desc,
                         id: job.id,
-                        created_at: job.created_at,
                         updated_at: job.updated_at
                     };
                 }
