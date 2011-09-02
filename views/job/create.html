@@ -11,6 +11,9 @@
 <p id="tag_select">
 {{each(i, tag) tags}}
     <span><input type="checkbox" class="tag" id="tag_${tag.id}" ${tag.checked ? 'checked="checked"': ''} value="${tag.id}" /><label for="tag_${tag.id}">${tag.name}</label></span>
+    {{if (i+1) % 5 === 0}}
+    <br/>
+    {{/if}}
 {{/each}}
 </p>
 <h3>微博预览 (剩余 <span id="wordcount">140</span>)</h3>

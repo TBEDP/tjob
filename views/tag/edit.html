@@ -27,6 +27,6 @@
 {{if current_user.is_admin && tag.id}}
 <br/>
 <form action="/tag/${tag.id}/delete" method="post">
-<button>删除此标签</button>
+<button onclick="return confirm('确定要删除此标签？');">删除此标签</button>
 </form>
 {{/if}}
