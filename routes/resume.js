@@ -57,7 +57,7 @@ module.exports = function(app) {
                     row.filename = path.basename(row.filepath);
                     row.remarks = [];
                     if(row.remark) {
-                        row.remarks.push({remark: row.remark, screen_name: '未知'});
+                        row.remarks.push({remark: row.remark, screen_name: '玄澄'});
                     }
                     resume_map[row.id] = row;
                 });
