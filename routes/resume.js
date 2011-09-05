@@ -10,6 +10,7 @@ var path = require('path')
   , Job = require('../models/job')
   , Resume = require('../models/resume')
   , ResumeRemark = require('../models/remark')
+  , Tag = require('../models/tag')
   , userauth = require('./user');
 
 //简历状态：0未读；1已读 2接受 3拒绝
@@ -21,68 +22,95 @@ var RESUME_STATUS = {
 };
 
 module.exports = function(app) {
+    /**
+     * 获取当前用户有权限查看的简历列表
+     *  1. 职位的创建者
+     *  2. 职位所属标签的管理者
+     */
     app.get('/resumes', userauth.require_author, function(req, res, next){
         var status = req.query.status || '0'; // 默认未读
         var pagging = util.get_pagging(req, 50)
           , job_id = req.query.job_id;
-        Resume.list(status, req.query.job, pagging, function(err, rows){
-            if(err) {
-                return next(err);
-            }
-            var locals = {
-                title: '简历列表', 
-                jobid: job_id,
-                current_job: null,
-                resumes: rows,
-                filter_status: status,
-                page_count: pagging.count,
-                prev_offset: pagging.prev_offset
-            };
-            if(rows.length === pagging.count) {
-                locals.next_offset = pagging.next_offset;
-            }
-            if(rows.length === 0) {
-                return res.render('resumelist.html', locals);
-            }
-            var ep = new EventProxy();
-            ep.assign('jobs', 'users', 'remarks', function(jobs_args, users_args, remarks_args) {
-                var jobs = jobs_args[0]
-                  , users = users_args[0]
-                  , remarks = remarks_args[0];
-                var resume_map = {};
-                rows.forEach(function(row){
-                    row.user = users[row.user_id];
-                    row.job = jobs[row.job_id];
-                    row.status_name = RESUME_STATUS[row.status];
-                    row.filename = path.basename(row.filepath);
-                    row.remarks = [];
-                    if(row.remark) {
-                        row.remarks.push({remark: row.remark, screen_name: '玄澄'});
-                    }
-                    resume_map[row.id] = row;
-                });
-                for(var i = 0, l = remarks.length; i < l; i++) {
-                    var remark = remarks[i];
-                    remark.screen_name = users[remark.user_id].screen_name;
-                    var resume = resume_map[remark.resume_id];
-                    resume.remarks.push(remark);
+        var locals = {
+            title: '简历列表', 
+            jobid: job_id,
+            current_job: null,
+            filter_status: status,
+            page_count: pagging.count,
+            prev_offset: pagging.prev_offset,
+            tagid: req.query.tag
+        };
+        var ep = new EventProxy();
+        ep.assign('resumes', 'jobs', 'users', 'remarks', function(resumes_args, jobs_args, users_args, remarks_args) {
+            var jobs = jobs_args[0]
+              , users = users_args[0]
+              , remarks = remarks_args[0]
+              , resumes = resumes_args[0];
+            var resume_map = {};
+            resumes.forEach(function(row){
+                row.user = users[row.user_id];
+                row.job = jobs[row.job_id];
+                row.status_name = RESUME_STATUS[row.status];
+                row.filename = path.basename(row.filepath);
+                row.remarks = [];
+                if(row.remark) {
+                    row.remarks.push({remark: row.remark, screen_name: '未知'});
                 }
-                if(job_id) {
-                    locals.current_job = jobs[job_id];
+                resume_map[row.id] = row;
+            });
+            for(var i = 0, l = remarks.length; i < l; i++) {
+                var remark = remarks[i];
+                remark.screen_name = users[remark.user_id].screen_name;
+                var resume = resume_map[remark.resume_id];
+                resume.remarks.push(remark);
+            }
+            if(job_id) {
+                locals.current_job = jobs[job_id];
+            }
+            locals.resumes = resumes;
+            res.render('resumelist.html', locals);
+        });
+        ep.on('error', function(err) {
+            ep.unbind();
+            next(err);
+        });
+        ep.on('jobids', function(jobids) {
+            Resume.list(status, jobids, pagging, function(err, rows){
+                if(err) {
+                    return ep.emit('error', err);
                 }
-                res.render('resumelist.html', locals);
+                if(rows.length === pagging.count) {
+                    locals.next_offset = pagging.next_offset;
+                }
+                if(rows.length === 0) {
+                    ep.unbind();
+                    locals.resumes = [];
+                    return res.render('resumelist.html', locals);
+                }
+                ep.emit('resumes', rows);
             });
-            ep.on('error', function(err) {
-                ep.unbind();
-                next(err);
+        });
+        
+        if(req.query.tag) {
+            Tag.get_jobs(req.query.tag, {}, function(err, jobs) {
+                var jobids = [];
+                for(var i = 0, l = jobs.length; i < l; i++) {
+                    jobids.push(jobs[i].id);
+                }
+                ep.emit('jobids', jobids);
             });
-            
+        } else {
+            ep.emit('jobids', req.query.job);
+        }
+        
+        ep.on('resumes', function(resumes) {
             var user_ids = [], job_ids = [], resume_ids = [];
-            rows.forEach(function(row){
+            for(var i = 0, l = resumes.length; i < l; i++) {
+                var row = resumes[i];
                 user_ids.push(row.user_id);
                 job_ids.push(row.job_id);
                 resume_ids.push(row.id);
-            });
+            }
             ResumeRemark.get_by_resume_ids(resume_ids, function(err, remarks) {
                 if(err) {
                     return ep.emit('error', err);

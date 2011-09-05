@@ -38,21 +38,25 @@ Resume.gets = function(user_id, callback) {
     db.query(sql, [user_id], callback);
 };
 
-Resume.list = function(status, job_id, pagging, callback) {
+Resume.list = function(status, job_ids, pagging, callback) {
     var sql = 'select * from job_resume'
       , params = [];
     if(status !== 'all') {
         sql += ' where status=?';
         params.push(status);
     }
-    if(job_id) {
+    if(job_ids) {
+        if(!(job_ids instanceof Array)) {
+            job_ids = [job_ids];
+        }
+        var qs = (new Array(job_ids.length)).join('?,') + '?';
         if(sql.indexOf('where ') < 0) {
             sql += ' where ';
         } else {
             sql += ' and ';
         }
-        sql += ' job_id=?';
-        params.push(job_id);
+        sql += ' job_id in (' + qs + ')';
+        params = params.concat(job_ids);
     }
     sql += ' order by id desc';
     if(pagging) {

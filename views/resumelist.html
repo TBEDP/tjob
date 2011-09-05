@@ -40,9 +40,9 @@ $(document).ready(function(){
 });
 </script>
 <p>
-    {{if filter_status == '0'}}未读{{else}}<a href="/resumes?status=0{{if jobid}}&job=${jobid}{{/if}}">未读</a>{{/if}}
-    {{if filter_status == '1'}}已读{{else}}<a href="/resumes?status=1{{if jobid}}&job=${jobid}{{/if}}">已读</a>{{/if}}
-    {{if filter_status == 'all'}}全部{{else}}<a href="/resumes?status=all{{if jobid}}&job=${jobid}{{/if}}">全部</a>{{/if}}
+    {{if filter_status == '0'}}未读{{else}}<a href="/resumes?status=0{{if jobid}}&job=${jobid}{{/if}}{{if tagid}}&tag=${tagid}{{/if}}">未读</a>{{/if}}
+    {{if filter_status == '1'}}已读{{else}}<a href="/resumes?status=1{{if jobid}}&job=${jobid}{{/if}}{{if tagid}}&tag=${tagid}{{/if}}">已读</a>{{/if}}
+    {{if filter_status == 'all'}}全部{{else}}<a href="/resumes?status=all{{if jobid}}&job=${jobid}{{/if}}{{if tagid}}&tag=${tagid}{{/if}}">全部</a>{{/if}}
 </p>
 {{if current_job}}
 <h3>投递职位: <a href="/job/${current_job.id}">${current_job.title}</a></h3>
@@ -91,10 +91,10 @@ $(document).ready(function(){
 {{/if}}
 <p>
     {{if prev_offset != null}}
-    <a href="/resumes?c=${page_count}&status=${filter_status}{{if jobid}}&job=${jobid}{{/if}}">首页</a>
-    <a href="/resumes?o=${prev_offset}&c=${page_count}&status=${filter_status}{{if jobid}}&job=${jobid}{{/if}}">上一页</a>
+    <a href="/resumes?c=${page_count}&status=${filter_status}{{if jobid}}&job=${jobid}{{/if}}{{if tagid}}&tag=${tagid}{{/if}}">首页</a>
+    <a href="/resumes?o=${prev_offset}&c=${page_count}&status=${filter_status}{{if jobid}}&job=${jobid}{{/if}}{{if tagid}}&tag=${tagid}{{/if}}">上一页</a>
     {{/if}}
     {{if next_offset}}
-    <a href="/resumes?o=${next_offset}&c=${page_count}&status=${filter_status}{{if jobid}}&job=${jobid}{{/if}}">下一页</a>
+    <a href="/resumes?o=${next_offset}&c=${page_count}&status=${filter_status}{{if jobid}}&job=${jobid}{{/if}}{{if tagid}}&tag=${tagid}{{/if}}">下一页</a>
     {{/if}}
 </p>

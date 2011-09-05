@@ -2,7 +2,9 @@
 <h2><a href="/tag/${tag.id}">${tag.name}</a>
 </h2>
 {{if current_user && current_user.is_author}}
-<p><a href="/tag/${tag.id}/edit">编辑标签</a></p>
+<p>
+    <a href="/tag/${tag.id}/edit">编辑标签</a> | <a href="/resumes?tag=${tag.id}">查看简历</a>
+</p>
 {{/if}}
 <div>{{html tag.text}}</div>
 <h3>相关职位:</h3>
