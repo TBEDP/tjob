@@ -9,6 +9,7 @@ var path = require('path')
   , User = require('../models/user')
   , Job = require('../models/job')
   , Resume = require('../models/resume')
+  , ResumeRemark = require('../models/remark')
   , userauth = require('./user');
 
 //简历状态：0未读；1已读 2接受 3拒绝
@@ -37,42 +38,76 @@ module.exports = function(app) {
                 page_count: pagging.count,
                 prev_offset: pagging.prev_offset
             };
-            if(rows.length == pagging.count) {
+            if(rows.length === pagging.count) {
                 locals.next_offset = pagging.next_offset;
             }
-            if(rows.length == 0) {
-                res.render('resumelist.html', locals);
-                return;
+            if(rows.length === 0) {
+                return res.render('resumelist.html', locals);
             }
-            var user_ids = [], job_ids = [];
+            var ep = new EventProxy();
+            ep.assign('jobs', 'users', 'remarks', function(jobs_args, users_args, remarks_args) {
+                var jobs = jobs_args[0]
+                  , users = users_args[0]
+                  , remarks = remarks_args[0];
+                var resume_map = {};
+                rows.forEach(function(row){
+                    row.user = users[row.user_id];
+                    row.job = jobs[row.job_id];
+                    row.status_name = RESUME_STATUS[row.status];
+                    row.filename = path.basename(row.filepath);
+                    row.remarks = [];
+                    if(row.remark) {
+                        row.remarks.push({remark: row.remark, screen_name: '未知'});
+                    }
+                    resume_map[row.id] = row;
+                });
+                for(var i = 0, l = remarks.length; i < l; i++) {
+                    var remark = remarks[i];
+                    remark.screen_name = users[remark.user_id].screen_name;
+                    var resume = resume_map[remark.resume_id];
+                    resume.remarks.push(remark);
+                }
+                if(job_id) {
+                    locals.current_job = jobs[job_id];
+                }
+                res.render('resumelist.html', locals);
+            });
+            ep.on('error', function(err) {
+                ep.unbind();
+                next(err);
+            });
+            
+            var user_ids = [], job_ids = [], resume_ids = [];
             rows.forEach(function(row){
                 user_ids.push(row.user_id);
                 job_ids.push(row.job_id);
+                resume_ids.push(row.id);
             });
-            User.gets(user_ids, function(err, users){
+            ResumeRemark.get_by_resume_ids(resume_ids, function(err, remarks) {
                 if(err) {
-                    return next(err);
+                    return ep.emit('error', err);
                 }
-                Job.gets(job_ids, function(err, jobs){
+                for(var i = 0, l = remarks.length; i < l; i++) {
+                    var remark = remarks[i];
+                    user_ids.push(remark.user_id);
+                }
+                User.gets(user_ids, function(err, users){
                     if(err) {
-                        return next(err);
+                        return ep.emit('error', err);
                     }
-                    var job_map = {};
-                    jobs.forEach(function(job){
-                        job_map[job.id] = job;
-                    });
-                    // 填充数据
-                    rows.forEach(function(row){
-                        row.user = users[row.user_id];
-                        row.job = job_map[row.job_id];
-                        row.status_name = RESUME_STATUS[row.status];
-                        row.filename = path.basename(row.filepath);
-                    });
-                    if(job_id && jobs.length > 0) {
-                        locals.current_job = jobs[0];
-                    }
-                    res.render('resumelist.html', locals);
+                    ep.emit('users', users);
                 });
+                ep.emit('remarks', remarks);
+            });
+            Job.gets(job_ids, function(err, jobs){
+                if(err) {
+                    return ep.emit('error', err);
+                }
+                var job_map = {};
+                jobs.forEach(function(job){
+                    job_map[job.id] = job;
+                });
+                ep.emit('jobs', job_map);
             });
         });
     });
@@ -199,6 +234,36 @@ module.exports = function(app) {
                 return res.send('2');
             }
             res.send('1');
+        });
+    });
+    
+    app.post('/resume/:id/add_remark', userauth.require_author, function(req, res, next) {
+        var resume_id = req.params.id
+          , remark = req.body.remark
+          , user_id = req.session.user.user_id;
+        ResumeRemark.insert({resume_id: resume_id, remark: remark, user_id: user_id}, function(err, result) {
+            if(err) {
+                return next(err);
+            }
+            ResumeRemark.gets(resume_id, function(err, remarks) {
+                if(err) {
+                    return next(err);
+                }
+                var user_ids = [];
+                for(var i = 0, l = remarks.length; i < l; i++) {
+                    user_ids.push(remarks[i].user_id);
+                }
+                User.gets(user_ids, function(err, users){
+                    if(err) {
+                        return next(err);
+                    }
+                    for(var i = 0, l = remarks.length; i < l; i++) {
+                        var remark = remarks[i];
+                        remark.screen_name = users[remark.user_id].screen_name;
+                    }
+                    res.json(remarks);
+                });
+            });
         });
     });
 };

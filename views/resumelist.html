@@ -1,3 +1,12 @@
+<style>
+#sidebar {
+    display: none;
+}
+#content {
+    width: 100%;
+}
+</style>
+
 <script type="text/javascript">
 $(document).ready(function(){
     $('input.resume_status_cb').click(function(){
@@ -12,10 +21,20 @@ $(document).ready(function(){
     
     $('textarea.resume_remark').change(function() {
         var $this = $(this);
-        $this.css('border', '1px solid');
+        var remark = $.trim($this.val());
+        if(!remark) {
+            return;
+        }
+        $this.css('border', '2px solid red');
         var id = $this.parent().parent().find('.resume_id').text();
-        $.post('/resumes/update/' + id, {remark: $this.val()}, function(data) {
-            $this.css('border', '2px solid green');
+        $.post('/resume/' + id + '/add_remark', {remark: remark}, function(remarks) {
+            $this.css('border', '2px solid green').val('');
+            var html = '';
+            for(var i = 0, l = remarks.length; i < l; i++) {
+                var remark = remarks[i];
+                html += '<li>' + remark.screen_name + ': ' + remark.remark + '</li>';
+            }
+            $this.prev('.remarks').html(html);
         });
     });
 });
@@ -57,7 +76,13 @@ $(document).ready(function(){
     <td><a href="/resumes?job=${resume.job.id}&status=all">${resume.job.resume_count}</a></td>
     {{/if}}
     <td>${resume.created_at.format('yyyy-MM-dd hh:mm')}</td>
-    <td><textarea class="resume_remark">${resume.remark}</textarea></td>
+    <td><ul class="remarks">
+        {{each(i, remark) resume.remarks}}
+        <li>${screen_name}: ${remark}</li>
+        {{/each}}
+    </ul>
+    <textarea class="resume_remark"></textarea>
+    </td>
   </tr>
   {{/each}}
 </table>

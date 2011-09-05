@@ -54,6 +54,7 @@ Resume.list = function(status, job_id, pagging, callback) {
         sql += ' job_id=?';
         params.push(job_id);
     }
+    sql += ' order by id desc';
     if(pagging) {
         sql += ' limit ?, ?';
         params.push(pagging.offset, pagging.count);

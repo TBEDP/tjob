@@ -409,3 +409,7 @@ input.text {
 	margin-bottom: 5px;
 	padding: .4em;
 }
+
+.resume_remark {
+    min-width: 300px;
+}

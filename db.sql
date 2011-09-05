@@ -42,7 +42,7 @@ CREATE TABLE  `tjob`.`job_repost` (
 CREATE TABLE  `tjob`.`job_resume` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `job_id` int(10) unsigned NOT NULL,
-  `user_id` varchar(50) CHARACTER SET latin1 NOT NULL,
+  `user_id` varchar(50) NOT NULL,
   `introducer` varchar(50) NOT NULL COMMENT '职位介绍人',
   `filepath` varchar(1000) NOT NULL,
   `size` int(10) unsigned NOT NULL,
@@ -171,3 +171,15 @@ alter table `tjob`.`job_resume` add column `remark` text after `status`;
 
 -- 9.2 add tag summary
 alter table `tjob`.`tag` add column `summary` text after `text`;
+
+-- 9.5 add job_resume_remark table
+CREATE TABLE  `tjob`.`job_resume_remark` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `resume_id` int(10) unsigned NOT NULL,
+  `remark` text,
+  `user_id` varchar(50) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `resume_id` (`resume_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
