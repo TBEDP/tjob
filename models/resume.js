@@ -49,14 +49,23 @@ Resume.list = function(status, job_ids, pagging, callback) {
         if(!(job_ids instanceof Array)) {
             job_ids = [job_ids];
         }
-        var qs = (new Array(job_ids.length)).join('?,') + '?';
-        if(sql.indexOf('where ') < 0) {
-            sql += ' where ';
+        if(job_ids.length === 0) {
+            if(sql.indexOf('where ') < 0) {
+                sql += ' where ';
+            } else {
+                sql += ' and ';
+            }
+            sql += ' 1 != 1 ';
         } else {
-            sql += ' and ';
+            var qs = (new Array(job_ids.length)).join('?,') + '?';
+            if(sql.indexOf('where ') < 0) {
+                sql += ' where ';
+            } else {
+                sql += ' and ';
+            }
+            sql += ' job_id in (' + qs + ')';
+            params = params.concat(job_ids);
         }
-        sql += ' job_id in (' + qs + ')';
-        params = params.concat(job_ids);
     }
     sql += ' order by id desc';
     if(pagging) {

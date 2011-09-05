@@ -30,7 +30,7 @@ module.exports = function(app) {
     app.get('/resumes', userauth.require_author, function(req, res, next){
         var status = req.query.status || '0'; // 默认未读
         var pagging = util.get_pagging(req, 50)
-          , job_id = req.query.job_id;
+          , job_id = req.query.job;
         var locals = {
             title: '简历列表', 
             jobid: job_id,
@@ -100,7 +100,17 @@ module.exports = function(app) {
                 ep.emit('jobids', jobids);
             });
         } else {
-            ep.emit('jobids', req.query.job);
+            if(job_id) {
+                ep.emit('jobids', job_id);
+            } else {
+                User.get_jobs(req.session.user.user_id, function(err, jobs) {
+                    var jobids = [];
+                    for(var i = 0, l = jobs.length; i < l; i++) {
+                        jobids.push(jobs[i].id);
+                    }
+                    ep.emit('jobids', jobids);
+                });
+            }
         }
         
         ep.on('resumes', function(resumes) {

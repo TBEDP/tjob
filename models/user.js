@@ -127,5 +127,5 @@ User.fetch_user_friends = function(user, count, cursor, callback) {
 };
 
 User.get_jobs = function(user_id, callback) {
-    db.query('select * from job where user_id = ? and status = 0', [user_id], callback);
+    db.query('select * from job where author_id = ? and status = 0', [user_id], callback);
 };
