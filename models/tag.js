@@ -21,8 +21,8 @@ Tag.delete = function(tag, callback) {
 
 Tag.get = function(id, callback) {
     db.get_obj('tag', {id: id}, function(err, tag) {
-        if(err) {
-            return callback(err);
+        if(err || !tag) {
+            return callback(err, tag);
         }
         // get tag users
         db.query('select user_id from tag_user where tag_id=?', [id], function(err, rows) {
