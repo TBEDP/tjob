@@ -45,7 +45,7 @@
             &nbsp;&nbsp;
             {{/if}}
             
-            {{if job.status === 0 && (current_user.user_id === job.author_id || current_user.is_admin)}}
+            {{if job.status === 0 && current_user && (current_user.user_id === job.author_id || current_user.is_admin)}}
             <a href="/job/create?job=${job.id}">编辑信息</a>
             &nbsp;&nbsp;
             <button class="close_job_btn" jobid="${job.id}">结束招聘</button>
