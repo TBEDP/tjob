@@ -3,4 +3,5 @@
 files
 web.log
 sessions.db
-
+err.log
+out.log

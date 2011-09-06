@@ -101,7 +101,7 @@ utillib.mkdirs(upload_dir, '777', function(){
 });
 
 app.listen(config.port, '127.0.0.1');
-console.log('web server start', config.base_url);
+console.log(new Date() + ' web server start', config.base_url);
 
 //catch all exception
 process.on('uncaughtException', function (err) {
