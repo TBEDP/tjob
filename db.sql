@@ -183,3 +183,12 @@ CREATE TABLE  `tjob`.`job_resume_remark` (
   KEY `resume_id` (`resume_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- 9.6 tag_user
+CREATE TABLE  `tjob`.`tag_user` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tag_id` int(10) unsigned NOT NULL,
+  `user_id` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `tag_id` (`tag_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

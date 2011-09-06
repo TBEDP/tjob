@@ -75,7 +75,7 @@ if(!config.debug) {
     });
     logger_options.stream = log_write_stream;
 }
-app.use(express.logger(logger_options));
+//app.use(express.logger(logger_options));
 
 // use jqtpl in express
 app.set("view engine", "html");

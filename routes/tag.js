@@ -106,16 +106,20 @@ module.exports = function(app){
         });
     });
     app.post('/tag/:id', userauth.require_author, function(req, res, next){
-        var tag = req.body;
+        var tag = req.body
+          , users = tag.users;
+        delete tag.users;
         var tag_id = req.params.id;
         Tag.update(tag_id, tag, function(err, result) {
             if(err) {
                 return next(err);
             }
-            if(result) {
-                return res.redirect('/tag/' + tag_id);
-            }
-            res.redirect('/');
+            Tag.update_users(tag_id, users, function(err) {
+                if(err) {
+                    return next(err);
+                }
+                res.redirect('/tag/' + tag_id);
+            });
         });
     });
     app.get('/tags', function(req, res) {

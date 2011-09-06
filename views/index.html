@@ -4,6 +4,14 @@
 {{if current_user && current_user.is_author}}
 <p>
     <a href="/tag/${tag.id}/edit">编辑标签</a> | <a href="/resumes?tag=${tag.id}">查看简历</a>
+    {{if tag.users && tag.users.length > 0}}
+    <br/>
+    简历负责人：
+    {{each(i, user) tag.users}}
+    <a href="http://weibo.com/n/${user.screen_name}" target="_blank">@${user.screen_name}</a>
+    {{/each}}
+    <hr/>
+    {{/if}}
 </p>
 {{/if}}
 <div>{{html tag.text}}</div>

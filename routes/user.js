@@ -121,6 +121,35 @@ module.exports = function(app){
         res.redirect(referer);
     });
     
+    app.get('/users/search.:format?', require_author, function(req, res, next){
+        var query = req.query.username || req.query.q || ''
+          , format = req.params.format;
+        if(!query) {
+            if(format === 'json') {
+                return res.send('');
+            } 
+            return res.redirect('/users');
+        }
+        User.search(query, function(err, rows){
+            if(err) {
+                return next(err);
+            }
+            if(format === 'json') {
+                var users = [];
+                for(var i = 0, l = rows.length; i < l; i++) {
+                    var row = rows[i];
+                    users.push(row.screen_name + '|' + row.user_id);
+                }
+                return res.send(users.join('\n'));
+            } 
+            var locals = {
+                userlist: rows || [],
+                username: query
+            };
+            res.render('users.html', locals);
+        });
+    });
+    
     app.get('/users', require_admin, function(req, res, next){
         var pagging = util.get_pagging(req, 20);
         User.list(pagging.offset, pagging.count, function(err, rows){
@@ -135,23 +164,6 @@ module.exports = function(app){
             if(rows.length === pagging.count) {
                 locals.next_offset = pagging.next_offset;
             }
-            res.render('users.html', locals);
-        });
-    });
-    
-    app.get('/users/search', require_admin, function(req, res, next){
-        var query = req.query.username || '';
-        if(!query) {
-            return res.redirect('/users');
-        }
-        User.search(query, function(err, rows){
-            if(err) {
-                return next(err);
-            }
-            var locals = {
-                userlist: rows || [],
-                username: query
-            };
             res.render('users.html', locals);
         });
     });

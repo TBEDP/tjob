@@ -1,5 +1,6 @@
 
-var db = require('./db.js').mysql_db;
+var db = require('./db').mysql_db
+  , User = require('./user');
 
 var Tag = module.exports = function Tag(){
     
@@ -19,7 +20,36 @@ Tag.delete = function(tag, callback) {
 };
 
 Tag.get = function(id, callback) {
-    db.get_obj('tag', {id: id}, callback);
+    db.get_obj('tag', {id: id}, function(err, tag) {
+        if(err) {
+            return callback(err);
+        }
+        // get tag users
+        db.query('select user_id from tag_user where tag_id=?', [id], function(err, rows) {
+            if(err) {
+                return callback(err);
+            }
+            if(rows.length === 0) {
+                return callback(null, tag);
+            }
+            var user_ids = [];
+            for(var i = 0, l = rows.length; i < l; i++) {
+                user_ids.push(rows[i].user_id);
+            }
+            User.gets(user_ids, function(err, users_map) {
+                if(err) {
+                    return callback(err);
+                }
+                tag.users = [];
+                if(users_map) {
+                    for(var k in users_map) {
+                        tag.users.push(users_map[k]);
+                    }
+                }
+                callback(null, tag);
+            });
+        });
+    });
 };
 
 Tag.list = function(callback) {
@@ -111,4 +141,31 @@ Tag.add_job_tags = function(job_id, tag_ids, callback) {
 
 Tag.get_job_tags = function(job_id, callback) {
     db.query('select tag from tag_job where job=?', [job_id], callback);
+};
+
+Tag.update_users = function(tag_id, users, callback) {
+    db.query('delete from tag_user where tag_id = ?', [tag_id], function(err) {
+        if(err) {
+            return callback && callback(err);
+        }
+        if(typeof users === 'string') {
+            users = [users];
+        }
+        if(!users || users.length === 0) {
+            return callback && callback();
+        }
+        var count = users.length, error = null; 
+        users.forEach(function(user_id) {
+            db.insert_or_update('tag_user', {tag_id: tag_id, user_id: user_id}, function(err, result) {
+                if(err) {
+                    console.error(err);
+                    callback && callback(err);
+                    return false;
+                }
+                if(--count === 0) {
+                    callback && callback(null, result);
+                }
+            });
+        });
+    });
 };

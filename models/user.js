@@ -1,6 +1,7 @@
 
 var db = require('./db.js').mysql_db
   , config = require('../config')
+  , EventProxy = require('../lib/eventproxy').EventProxy
   , tapi = config.tapi;
 
 var User = module.exports = function User(props){
@@ -55,7 +56,7 @@ User.search = function(query, callback) {
     if(!query) {
         return callback();
     }
-    var sql = 'select id, screen_name, role, created_at, updated_at from user where screen_name like "%' + query + '%"';
+    var sql = 'select id, user_id, screen_name, role, created_at, updated_at from user where screen_name like "%' + query + '%"';
     db.query(sql, callback);
 };
 
@@ -127,5 +128,23 @@ User.fetch_user_friends = function(user, count, cursor, callback) {
 };
 
 User.get_jobs = function(user_id, callback) {
-    db.query('select * from job where author_id = ? and status = 0', [user_id], callback);
+    // 他所创建的和他负责tag所包含的job
+    db.query('select tag_id from tag_user where user_id = ?', [user_id], function(err, rows) {
+        if(err) {
+            return callback(err);
+        }
+        var params = [user_id]
+          , sql = 'select * from job where author_id = ? and status = 0';
+        if(rows.length > 0) {
+            var tag_ids = [];
+            for(var i = 0, l = rows.length; i < l; i++) {
+                tag_ids.push(rows[i].tag_id);
+            }
+            var qs = (new Array(tag_ids.length)).join('?,') + '?';
+            params = params.concat(tag_ids);
+            sql = 'select * from job where (author_id = ? or ' 
+                + 'id in (select job from tag_job where tag in (' + qs + '))) and status = 0';
+        }
+        db.query(sql, params, callback);
+    });
 };
