@@ -2,6 +2,41 @@
 
 (function(exports){
 
+// format datetime, demo: new Date().format("yyyy-MM-dd hh:mm:ss");
+Date.prototype.format = function(format, isOrigin) {
+    format = format || "yyyy-MM-dd hh:mm:ss";
+    var o = {
+        "M+" : this.getMonth()+1, //month
+        "d+" : this.getDate(),    //day
+        "h+" : this.getHours(),   //hour
+        "m+" : this.getMinutes(), //minute
+        "s+" : this.getSeconds(), //second
+        "q+" : Math.floor((this.getMonth()+3)/3), //quarter
+        "S" : this.getMilliseconds() //millisecond
+    };
+    if(/(y+)/.test(format)) {
+        format=format.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+    }
+
+    for(var k in o) {
+        if(new RegExp("("+ k +")").test(format)) {
+            format = format.replace(RegExp.$1, RegExp.$1.length==1 ? o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
+        }
+    }
+    //显示友好的时间格式，如“三小时前”
+//    if(!isOrigin) {
+//        var now=new Date();
+//        var minToNow=-(this.getTime()-now.getTime());
+//        var time_std=[1000,60*1000,60*60*1000,24*60*60*1000];
+//        if(minToNow<time_std[2]) {
+//            if(minToNow>0 && minToNow<time_std[1]) format=Math.floor(minToNow/time_std[0]).toString()+"秒前";
+//            if(minToNow>time_std[1] && minToNow<time_std[2]) format=Math.floor(minToNow/time_std[1]).toString()+"分钟前";
+//            if(minToNow>time_std[2]) format=Math.floor(minToNow/time_std[2]).toString()+"小时前";
+//        }
+//    }
+    return format;
+};
+    
 if(String.prototype.format === undefined) {
 	var STRING_FORMAT_REGEX = 
 		exports.STRING_FORMAT_REGEX = /\{\{([\w\s\.\(\)"',-\[\]]+)?\}\}/g;

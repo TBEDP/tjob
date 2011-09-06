@@ -32,7 +32,8 @@ $(document).ready(function(){
             var html = '';
             for(var i = 0, l = remarks.length; i < l; i++) {
                 var remark = remarks[i];
-                html += '<li>' + remark.screen_name + ': ' + remark.remark + '</li>';
+                html += '<li>' + remark.screen_name + ': ' + remark.remark 
+                    + '<span style="color:#889DB6;">(' + new Date(remark.created_at).format('MM-dd hh:mm') + ')</span></li>';
             }
             $this.prev('.remarks').html(html);
         });
@@ -75,10 +76,10 @@ $(document).ready(function(){
     <td><a href="/resumes?job=${resume.job.id}&status=all">${resume.job.title}</a></td>
     <td><a href="/resumes?job=${resume.job.id}&status=all">${resume.job.resume_count}</a></td>
     {{/if}}
-    <td>${resume.created_at.format('yyyy-MM-dd hh:mm')}</td>
+    <td>${resume.created_at.format('MM-dd hh:mm')}</td>
     <td><ul class="remarks">
         {{each(i, remark) resume.remarks}}
-        <li>${screen_name}: ${remark}</li>
+        <li>${screen_name}: ${remark} <span style="color:#889DB6;">(${created_at.format('MM-dd hh:mm')})</span></li>
         {{/each}}
     </ul>
     <textarea class="resume_remark"></textarea>
