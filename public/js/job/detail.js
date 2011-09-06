@@ -60,28 +60,29 @@ $(document).ready(function(){
     });
     var current_user_id = $('#current_user_id').val();
 	var job_id = $('#job_id').val(), weibo_id = $('#job_weibo_id').val();
-    // 获取转发人列表
-    $.getJSON('/job/' + job_id + '/repost_users/' + weibo_id, function(data){
-    	var users = data.users;
-    	if(users.length > 0) {
-    		$('#repost_users').append('<h2>转发者</h2>');
-    		for(var i=0; i<users.length; i++){
-    			var screen_name = users[i];
-            	var item = {
-            		screen_name: screen_name,
-            		screen_name_encode: encodeURI(screen_name)
-            	};
-                $('#repost_users').append('<a class="repost_user" target="_blank" href="http://t.sina.com.cn/n/{{screen_name_encode}}">@{{screen_name}}</a>&nbsp;&nbsp;'.format(item));;
-            }
-		}
-    	if(current_user_id) {
-	        var $introducer_selector = $('#introducer_selector');
-	        var author = $('#author_link').text().substring(1);
-	        var default_introducer = $('#resume_introducer').text().substring(1) 
-	        	|| data.introducer || author;
-	        $('#introducer').val(default_introducer);
-    	}
-    });
+	if(weibo_id) {
+	    // 获取转发人列表
+	    $.getJSON('/job/' + job_id + '/repost_users/' + weibo_id, function(data){
+	        var users = data.users;
+	        if(users.length > 0) {
+	            $('#repost_users').append('<h2>转发者</h2>');
+	            for(var i=0; i<users.length; i++){
+	                var screen_name = users[i];
+	                var item = {
+	                    screen_name: screen_name,
+	                    screen_name_encode: encodeURI(screen_name)
+	                };
+	                $('#repost_users').append('<a class="repost_user" target="_blank" href="http://t.sina.com.cn/n/{{screen_name_encode}}">@{{screen_name}}</a>&nbsp;&nbsp;'.format(item));
+	            }
+	        }
+	        if(current_user_id) {
+	            var author = $('#author_link').text().substring(1);
+	            var default_introducer = $('#resume_introducer').text().substring(1) 
+	                || data.introducer || author;
+	            $('#introducer').val(default_introducer);
+	        }
+	    });
+	}
     
     $("#introducer").autocomplete("/user/friends/search", {
 		width: 260,
