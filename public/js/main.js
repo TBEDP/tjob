@@ -30,7 +30,10 @@ $(document).ready(function(){
     if(current_user_id) {
         var ids = [];
         $('.title').each(function(){
-            ids.push($(this).attr('id').substring(4));
+            var tid = $(this).attr('id').substring(4);
+            if(tid) {
+                ids.push(tid);
+            }
         });
         if(ids.length > 0){
             $.post('/tapi/counts', {ids: ids.join(',')}, function(counts){
