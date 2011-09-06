@@ -70,7 +70,13 @@ module.exports = function(app){
             if(user && jobs && jobs.length > 0) {
                 job_ids = [];
                 for(var i = 0, len = jobs.length; i < len; i++) {
-                    job_ids.push(jobs[i].id);
+                    var job = jobs[i];
+                    job_ids.push(job.id);
+                    if(job.weibo_info) {
+                        job.weibo_info = JSON.parse(job.weibo_info);
+                    } else {
+                        job.weibo_info = {};
+                    }
                 }
             }
             if(user && job_ids) {
