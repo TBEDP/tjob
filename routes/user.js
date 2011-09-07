@@ -79,17 +79,20 @@ module.exports = function(app){
             oauth_verifier: oauth_verifier
         };
         var auth_info = req.session.authinfo;
+        if(!auth_info || !oauth_token) {
+            return res.send('oauth_token缺失，请重试. <a href="/login/' + blogtype + '">登录</a>');
+        }
         var referer = auth_info[1] || '/';
         user.oauth_token_secret = auth_info[0];
         tapi.get_access_token(user, function(error, auth_user) {
             if(error) {
-                return res.send('get_access_token 异常: ' + error.message +' ，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
+                return res.send('get_access_token 异常: ' + error.message +' ，请重试. <a href="/login/' + blogtype + '">登录</a>');
             }
             if(auth_user) {
                 // 获取用户信息并存储
                 tapi.verify_credentials(auth_user, function(error, t_user) {
                     if(error) {
-                        return res.send('verify_credentials 异常: ' + error.message +' ，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
+                        return res.send('verify_credentials 异常: ' + error.message +' ，请重试. <a href="/login/' + blogtype + '">登录</a>');
                     }
                     Object.extend(t_user, auth_user);
                     var user_id = blogtype + ':' + t_user.id;

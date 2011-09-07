@@ -19,8 +19,8 @@ $(document).ready(function(){
         });
     });
     
-    $('textarea.resume_remark').change(function() {
-        var $this = $(this);
+    function _remark_submit(ele) {
+        var $this = $(ele);
         var remark = $.trim($this.val());
         if(!remark) {
             return;
@@ -28,7 +28,7 @@ $(document).ready(function(){
         $this.css('border', '2px solid red');
         var id = $this.parent().parent().find('.resume_id').text();
         $.post('/resume/' + id + '/add_remark', {remark: remark}, function(remarks) {
-            $this.css('border', '2px solid green').val('');
+            $this.css('border', '1px solid green').val('');
             var html = '';
             for(var i = 0, l = remarks.length; i < l; i++) {
                 var remark = remarks[i];
@@ -37,6 +37,14 @@ $(document).ready(function(){
             }
             $this.prev('.remarks').html(html);
         });
+    };
+    
+    $('textarea.resume_remark').change(function() {
+        _remark_submit(this);
+    }).keypress(function(event) {
+        if(event.which === 13) {
+            _remark_submit(this);
+        }
     });
 });
 </script>
