@@ -77,7 +77,7 @@ $(document).ready(function(){
     <td><input type="checkbox" class="resume_status_cb" {{if resume.status == 1}}checked="checked"{{/if}} /></td>
     <td class="resume_id">${resume.id}</td>
     <td><a title="查看他投递的其他简历" href="/resume/list/${resume.user.user_id}">${resume.user.screen_name}</a></td>
-    <td><a href="/download?p=${encodeURI(resume.filepath)}">${resume.filename}</a></td>
+    <td><a href="/download?p=${encodeURIComponent(resume.filepath)}">${resume.filename}</a></td>
     {{if jobid}}
     <td>${(resume.comment && resume.comment.remove_html_tag().substring(0, 100) + '......') || ''}</td>
     {{else}}

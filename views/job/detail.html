@@ -78,7 +78,7 @@
                     {{if resume.introducer}}
                     经 <a href="http://t.sina.com.cn/n/${resume.introducer}" id="resume_introducer" target="_blank">@${resume.introducer}</a> 的介绍
                     {{/if}}
-                    投递了简历 <a href="/download?p=${encodeURI(resume.filepath)}">${resume.filename}</a>
+                    投递了简历 <a href="/download?p=${encodeURIComponent(resume.filepath)}">${resume.filename}</a>
                     <br />
                     <button id="update_resume_btn">我要更新简历</button>
                 </p>
