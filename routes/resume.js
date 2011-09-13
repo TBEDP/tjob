@@ -207,7 +207,7 @@ module.exports = function(app) {
     });
     
     app.post('/resume/upload/:job_id', function(req, res, next){
-        if(!req.session.user && !req.session.user.user_id) {
+        if(!req.session.user || !req.session.user.user_id) {
             return res.send('用户未登录.');
         }
         var fields = req.form.fields, files = req.form.files;
