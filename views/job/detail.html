@@ -1,6 +1,6 @@
 <script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
 <script type="text/javascript" src="/js/editor.js"></script>
-<script type="text/javascript" src="/js/job/detail.js?v=1"></script>
+<script type="text/javascript" src="/js/job/detail.js?v=2"></script>
 
 <script type='text/javascript' src='/js/jquery-autocomplete/lib/jquery.bgiframe.min.js'></script>
 <script type='text/javascript' src='/js/jquery-autocomplete/lib/thickbox-compressed.js'></script> 
@@ -87,7 +87,7 @@
                 <h3>招聘信息来源(从谁的微博知道此信息的?):</h3>
                 @<input type="text" id="introducer" name="introducer" size="20" />
 		        <h3>我想说说(对此职位的想法或者回答问题):</h3>
-		        <textarea class="simple_tinymce" name="comment" id="comment">${resume && resume.comment}</textarea>
+		        <textarea class="simple_tinymce" name="comment" id="comment">${(resume && resume.comment) || ''}</textarea>
                 <br/>
                 <h3>选择的要上传的简历：(说说和简历都不会对外公布)</h3>
                 <input id="resume" name="resume" type="file" accept="png,gif,jpg,jpeg,doc,docx,pdf,txt,wps" />

@@ -44,9 +44,13 @@ $(document).ready(function(){
         }));
     }
     $('#upload_btn').click(function(){
-    	if(!$('#resume').val()) {
-    		$('#resume').attr('disabled', 'disabled');
+    	if(!$('#comment').val() && !$('#resume').val()) {
+    	    alert('请选择要上传的简历');
+    	    return false;
     	}
+    	if(!$('#resume').val()) {
+            $('#resume').attr('disabled', 'disabled');
+        }
     });
     
     $('.close_job_btn').click(function(){
