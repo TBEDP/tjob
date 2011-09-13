@@ -11,25 +11,25 @@ var express = require('express'),
 	RedisStore = require('connect-redis')(express);
 	//nStoreSession = require('./lib/nstore-session');
 
-//fixed express download cancel bug:
-require('http').ServerResponse.prototype.download = function(path, filename, fn){
-	var self = this;
-	// support callback as second arg
-	if ('function' == typeof filename) {
-		fn = filename;
-		filename = null;
-	}
-	// transfer the file
-	this.attachment(filename || path).sendfile(path, function(err){
-	    //if (err) self.removeHeader('Content-Disposition');
-		if (fn) return fn(err);
-		if (err) {
-		self.req.next('ENOENT' == err.code
-	        ? null
-	        : err);
-	    }
-	});
-};
+////fixed express download cancel bug:
+//require('http').ServerResponse.prototype.download = function(path, filename, fn){
+//	var self = this;
+//	// support callback as second arg
+//	if ('function' == typeof filename) {
+//		fn = filename;
+//		filename = null;
+//	}
+//	// transfer the file
+//	this.attachment(filename || path).sendfile(path, function(err){
+//	    //if (err) self.removeHeader('Content-Disposition');
+//		if (fn) return fn(err);
+//		if (err) {
+//		self.req.next('ENOENT' == err.code
+//	        ? null
+//	        : err);
+//	    }
+//	});
+//};
 
 var static_options = {maxAge: 3600000 * 24 * 30};
 var MAX_AGE = 3600 * 24 * 14;
