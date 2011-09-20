@@ -1,0 +1,45 @@
+div {
+  margin:20px;
+}
+div .infoDiv {
+  display:none;
+}
+.page{ 
+  width:80%;
+}
+.box{
+  margin-bottom:20px;
+}
+.header{
+  padding-top:10px auto;
+}
+.main{
+}
+#autoCreate{
+  width:100%;
+  height:800px;
+  float:left;
+  position:relative;
+  left:300px;
+  top:20px;
+  font-size:14px;
+}
+#sideBar{
+  float:left;
+  margin-left:-100%;
+  position:relative;
+  top:70px;
+  width:208px;
+  cursor:pointer;
+  font-size:14px;
+}
+#postBtn{
+  position:relative;
+  top:30px;
+}
+.on{
+  background:#cccccc;
+}
+.off{
+  background:#ffffff;
+}

@@ -1,0 +1,61 @@
+{
+  "basicInfo":{
+    "description" : "基本资料",
+    "addAble" : false,
+    "form":{
+      "name": {"type" : "text", "show" : "名字："},
+      "sex" : {
+        "male":{"type" : "radio", "show" : "男"},
+        "female":{"type" : "radio", "show" : "女"}
+      },
+      "age" : {"type" : "text", "show" : "年龄："},
+      "location" : {"type" : "text", "show" : "籍贯："},
+      "cellPhone" : {"type" : "text", "show" : "手机："},
+      "mail" : {"type" : "text", "show" : "邮箱："}
+    }
+  },
+  "ability" : {
+    "description" : "能力(学习,沟通,运动等,10分制)",
+    "addAble" : true,
+    "form" : {
+      "aspect" : {"type" : "text", "show" : "能力"},
+      "score" : {"type" : "text", "show" : "分数"}
+    }
+  },
+  "project" : {
+    "description" :"项目经验",
+    "addAble" : true,
+    "form":{
+      "proName" : {"type": "text", "show" : "项目名称："},
+      "proStartTime" : {"type" : "time", "show" : "开始时间："},
+      "proEndTime" : {"type" : "time", "show": "结束时间："},
+      "proDetail" : {"type" : "text", "show" : "详细说明："}
+    }
+  },
+  "education" : {
+    "description" : "教育情况",
+    "addAble" : true,
+    "form":{
+      "school" : {"type" : "text", "show" : "学校名称："},
+      "eduStartTime" : {"type" : "time", "show" : "开始时间："},
+      "eduEndTime" : {"type" : "time", "show" : "毕业时间："},
+      "eduDetail" : {"type" : "text", "show" : "补充表述："}
+    }
+  },
+  "tag" : {
+    "description" : "个性化标签",
+    "addAble" : true,
+    "form":{
+      "word" : {"type" : "text", "show" : "标签："}
+    }
+  },
+  "skill" : {
+    "description" : "专业技能",
+    "addAble" : true,
+    "form":{
+      "skillName" : {"type" : "text", "show" : "技能："},
+      "degree" : {"type" : "text", "show" : "熟练程度(满分为10分)"},
+      "learnTime" : {"type" : "text", "show" : "接触时间(以月为单位)"}
+    }
+  }
+}

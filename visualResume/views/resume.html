@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title><%= config.site_name %></title>
+<link href="/styles/reset.css" rel="stylesheet" type="text/css" />
+<link href="/templates/test/resume.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/scripts/jquery-1.6.2.min.js"></script>
+<script type="text/javascript" src="/scripts/raphael-min.js"></script>
+<script type="text/javascript">
+  /*
+    功能:把个人信息从ejs内拷贝到js,从而获得数据库的信息
+  */
+  function getData(){
+    var data = {};
+    <% 
+      for(var info in person){
+        if(typeof person[info] != "object"){
+          %>data['<%= info %>'] = '<%= person[info] %>';<%
+        }
+        else{
+          if(info != '_id'){
+            %>data['<%= info %>'] = new Array(<%= person[info].length %>);<%
+              for(var i = 0; i < person[info].length; i++){
+                %>data['<%= info %>'][<%= i %>] = {};<%
+                  for(var attr in person[info][i]){
+                    %>data['<%= info %>'][<%= i %>]['<%= attr %>'] = "<%= person[info][i][attr] %>";<%
+                  }
+              }
+          }
+        }
+      }
+    %>
+    return data;
+  }
+  var dbData = getData();
+</script>
+
+</head>
+
+<body>
+  <%- body %>
+<script type="text/javascript" src="/scripts/draw.js"></script>
+</body>
+</html>
+

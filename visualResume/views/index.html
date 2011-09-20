@@ -1,0 +1,318 @@
+  <form id="form">
+    <div id="autoCreate">
+      <% for(var div in formInfo){ %>
+        <div id=<%= div %> class="infoDiv"><%= formInfo[div]['description'] %>
+          <%
+            if(!formInfo[div]['addAble']){
+              %><table><%
+              drawDiv(formInfo[div]['form'], 'form', dbData);
+              %></table><%
+            }
+            else{
+              drawMultiDiv(formInfo[div]['form'], 'form', dbData[div], div);
+          %>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+    <div id="sideBar">
+      <ul>
+        <% for(var div in formInfo){ %>
+        <li id="<%= div+"Li" %>" onclick="sideBarClick(event);return false;"><%= formInfo[div]['description'] %></li>
+        <% } %>
+      </ul>
+      <p><button id="postBtn" onclick="postData();return false;">提交</button></p>
+    </div>
+  </form>
+  
+<%
+  //生成不可添加的表单
+  function drawDiv(form, formName, person){
+    for(var input in form){
+      if(!form[input]['type']){
+        drawDiv(form[input], input, person);
+      }
+      else{
+        if(form[input]['type'] == "radio"){
+          drawInput(input, person[formName], "radio", form[input]['show'], formName);
+        }
+        else{
+          drawInput(input, person[input], form[input]['type'], form[input]['show'], formName);
+        }
+      }
+    }
+  }
+  //生成可添加的表单
+  function drawMultiDiv(form, formName, record, divId){
+    var i = 0;
+    if(typeof record != "undefined" && record.length > 0){
+      for(i = 0; i < record.length; i++){
+        %><div><table><%
+        for(var input in form){
+          if(form[input]['type'] == "radio"){
+            drawInput(input+i, record[i][input+i], "radio", form[input]['show'], formName);
+          }
+          else{
+            drawInput(input+i, record[i][input+i], form[input]['type'], form[input]['show'], formName);
+          }
+        }
+        %></table></div><%
+      }
+    }
+    %><div><table><%
+    var isFirst = true;
+    for(var input in form){
+      if(typeof record == "undefined")
+        record = {};
+      if(form[input]['type'] == "radio"){
+        drawInput(input+i, record[i], "radio", form[input]['show'], formName);//record[i]为undefined
+      }
+      else{
+        drawInput(input+i, record[i], form[input]['type'], form[input]['show'], formName);
+        if(isFirst && form[input]['type'] == "text"){
+          isFirst = false;
+          %>
+          <script type="text/javascript">
+            $("#"+"<%= input+i %>")[0].onfocus = function(){ addRecord('<%= divId %>');};
+          </script>
+          <%
+        }
+      }
+    }
+    %></table></div><%
+    if(i != 0){
+      %>
+      <script type="text/javascript">
+        var lastButTwoDiv = $("#"+"<%= divId %>")[0].getElementsByTagName("div")[<%= i %>-1];
+        var lastButTwoInput = lastButTwoDiv.getElementsByTagName("input")[0];
+        lastButTwoInput.onblur = function(){
+          theLastDiv = $("#"+"<%= divId %>")[0].getElementsByTagName("div")[<%= i %>];
+          var lastButTwoInput = $("#"+"<%= divId %>")[0].getElementsByTagName("div")[<%= i %>-1].getElementsByTagName("input")[0];
+          if(lastButTwoInput.value == "" && theLastDiv.getElementsByTagName("input")[0].value == ""){
+            deleteRecord('<%= divId %>');
+          }
+        };
+      </script>
+      <%
+    }
+  }
+%>
+
+<%
+  var radioName = "";
+  function drawInput(id, value, type, show, formName){
+%>
+<%  if(type != "radio"){ %><tr><td><% }
+    else if(radioName != formName){
+      radioName = formName;
+      %><tr><td></td><td><%
+    } 
+%>
+    <%= show %>
+<%  if(type != "radio"){ %></td><td><% } %>
+<%  switch(type){
+      case "text":
+%>
+      <input type="text" id="<%= id %>" <% if(value){ %>value="<%= value %>"<% } %> />
+<%    break;
+      case "radio":
+%>
+      <input type="radio" id="<%= id %>" name="<%= formName %>" <% if(value && value==id ){ %>checked="checked" <% } %> />
+<%    break;
+      case "time":
+      var time = {};
+      if(typeof value != "undefined")
+        var time = value.split('-');
+%>
+      <select id="<%= id+'Y' %>">
+      <% for(var i = 1990; i <= 2012; i++){ %>
+      <option value=<%= i %> <% if(typeof time[0] != 'undefined' && i == time[0]){%>selected="selected"<% } %>><%= i %></option>
+      <% } %>
+      </select>年
+      <select id="<%= id+'M' %>">
+      <% for(var i = 1; i <= 12; i++){ %>
+        <option value="<%= i %>" <% if(typeof time[1] != 'undefined' && i == time[1]){%>selected="selected"<% } %>><%= i %></option>
+      <% } %>
+      </select>月
+<%    break;
+      case "textarea":
+%>
+      <textarea id="<%= id %>" rows="3" cols="20">
+        <% if(value){ %><%= value %><% } %>
+      </textarea>
+<%
+      break;
+      default:
+    }
+%>
+<%   if(type != "radio"){ %></td></tr><% } 
+%>
+<% } %>
+
+<script type="text/javascript">
+  function addRecord(divId){
+    var div = $("#"+divId)[0];
+    var copyNode = div.getElementsByTagName("div");
+    copyNode = copyNode[copyNode.length-1];
+    var copyNodeFirstInput = copyNode.getElementsByTagName("input")[0];
+    copyNodeFirstInput.onfocus = function(){};
+    var newDiv = $(copyNode).clone();
+    copyNodeFirstInput.onblur = function(){
+      if(copyNodeFirstInput.value == "" && newDiv[0] 
+          && newDiv[0].getElementsByTagName("input")[0].value == ""){
+        deleteRecord(divId);
+        copyNodeFirstInput.onfocus = function(){  addRecord(divId); };
+      }
+    };
+    var count = div.childElementCount;
+    //rename id
+    var inputs = newDiv[0].getElementsByTagName("input");
+    for(var i = 0; i < inputs.length; i++){
+      temp = inputs[i].id.slice(0, inputs[i].id.length-1);
+      inputs[i].id = temp + count;
+    }
+    var textareas = newDiv[0].getElementsByTagName("textarea");
+    for(var i = 0; i < textareas.length; i++){
+      temp = textareas[i].id.slice(0, textareas[i].id.length-1);
+      textareas[i].id = temp + count;
+    }
+    var selects = newDiv[0].getElementsByTagName("select");
+    for(var i = 0; i < selects.length; i++){
+      ym = selects[i].id[selects[i].id.length-1];
+      temp = selects[i].id.slice(0, selects[i].id.length-2);
+      selects[i].id = temp + count + ym;
+    }
+    newDiv[0].getElementsByTagName("input")[0].onfocus = function(){ addRecord(divId); };
+    div.appendChild(newDiv[0]);
+  }
+
+  function deleteRecord(divId){
+    var div = $("#"+divId)[0];
+    var deleteNode = div.getElementsByTagName("div");
+    var count = deleteNode.length;
+    if(count <= 1)
+      return;
+    var newLastNode = deleteNode[count-2];
+    deleteNode = deleteNode[count-1];
+    var deleteNodeInput = deleteNode.getElementsByTagName("input")[0];
+    deleteNodeInput.onfocus = function(){};
+    newLastNode.getElementsByTagName("input")[0].onblur = function(){};
+    newLastNode.getElementsByTagName("input")[0].onfocus = function(){ addRecord(divId); };
+    if(count >= 3){
+      var lastButTwoInput = div.getElementsByTagName("div")[count-3].getElementsByTagName("input")[0];
+      lastButTwoInput.onblur = function(){
+        var divs = $("#"+divId)[0].getElementsByTagName("div");
+        var count = divs.length;
+        if(divs[count-2].getElementsByTagName("input")[0].value == "" &&
+            divs[count-1].getElementsByTagName("input")[0].value == ""){
+          deleteRecord(divId);
+        }
+      };
+    }
+    div.removeChild(deleteNode);
+  }
+
+  function postData(){
+    var data = {};
+    <%
+      for(var div in formInfo){
+        if(!formInfo[div]['addAble']){
+          %>$.extend(data, getDivInput($('#<%= div %>')[0]));<%
+        }
+        else{
+          %>$.extend(data, getMultiDivInput($('#<%= div %>')[0]));<%
+        }
+      }
+    %>
+    $.ajax({
+      cache:false,
+      url : "/saveData",
+      type: "post",
+      data : {"data" : data, "id" : '<%= userName %>'},
+      dataType : "json",
+      error : function(){
+        alert("error: send data fail!");
+      },
+      success : function(data){
+        alert("保存成功！");
+        window.location = '/resume/<%= template %>/' + data.msg;
+      }
+    });
+  }
+
+  function getDivInput(div){
+    var inputData = {};
+    var inputs = div.getElementsByTagName("input");
+    for(var i = 0; i < inputs.length; i++){
+      if(inputs[i].type == "text"){//for text input
+        if(inputs[i].value != ""){
+          inputData[inputs[i].id] = inputs[i].value;
+        }
+      }
+      else if(inputs[i].type == "radio" && inputs[i].checked == true){//for radio input
+        inputData[inputs[i].name] = inputs[i].id;
+      }
+    }
+    var selects = div.getElementsByTagName("select");//for select type
+    for(var i = 0; i < selects.length; i++){
+      var lastLetter = selects[i].id[selects[i].id.length-1];
+      if(lastLetter == 'Y'){//for time select
+        var year = selects[i].options[selects[i].selectedIndex].value;
+        var monthSelect = $("#"+selects[i].id.slice(0, selects[i].id.length-1) + "M")[0];
+        var month = monthSelect.options[monthSelect.selectedIndex].value;
+        inputData[selects[i].id.slice(0, selects[i].id.length-1)] = year + "-" + month;
+      }
+      else if(lastLetter == 'M'){
+        //ignore it
+      }
+      else{
+        inputData[selects[i].id] = selects[i].options[selects[i].selectedIndex].value;
+      }
+    }
+    var textareas = div.getElementsByTagName("textarea");//for textarea
+    for(var i = 0; i < textareas.length; i++){
+      if(textareas[i].value != ""){
+        inputData[textareas[i].id] = textareas[i].value;
+      }
+    }
+    return inputData;
+  }
+
+  function getMultiDivInput(div){
+    var inputData = {};
+    inputData[div.id] = new Array();
+    var count = div.getElementsByTagName("div").length;
+    for(var i = 0; i < count-1; i++){//the first child is addRecordBtn
+      var divData = getDivInput(div.children[i]);
+      inputData[div.id].push(divData);
+    }
+    return inputData;
+  }
+
+  function sideBarClick(e){
+    var src = e.target || e.srcElement;
+    var showDivId = src.id.substring(0, src.id.length-2);
+    <% for(var div in formInfo) {%>
+      if("<%= div %>" != showDivId){
+        $("#"+"<%= div %>").hide();
+        $("#"+"<%= div %>"+"Li")[0].className = "off";
+      }
+      else{
+        $("#"+showDivId).show();
+        $("#"+"<%= div %>"+"Li")[0].className = "on";
+      }
+    <% } %>
+  }
+  <%
+    var isFirstDiv = true;
+    for(var div in formInfo){
+      if(isFirstDiv){
+        isFirstDiv = false;
+      %>
+        $("#"+"<%= div %>").show();
+        $("#"+"<%= div %>"+"Li")[0].className = "on";
+      <%
+      }
+    }
+  %>
+</script>

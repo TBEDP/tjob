@@ -1,0 +1,10 @@
+body { background:#EEE; }
+.page { width:800px; margin:10px auto; background:#FFF; padding:10px 20px; border:1px solid #CCC; border-radius:10px; }
+.box { margin-bottom:20px;  height:1150px;}
+/*div { border:1px solid black; }*/
+#basicInfo {  width:270px; height:100px;  float:right; margin:25px; position:relative; left:-40px;  top:30px;}
+#rader {  width: 250px; height:250px; position:relative; left:80px; top:20px;}
+#timeAxis { width:100%; height:350px; position:relative; top:45px;}
+#tags { width:370px; height:290px; margin:20px; position:relative; top:30px; left:-10px;}
+#pieChart { width:400px; height:400px; float:right; position:relative; top:-45px; left:0px;}
+#contact {width:700px; height:40px; position:relative; top:190px;}
