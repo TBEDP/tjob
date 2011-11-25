@@ -1,5 +1,5 @@
-var os = require('os'),
-	path = require('path');
+var os = require('os');
+var path = require('path');
 var weibo = require('weibo');
 
 // set weibo appkey
