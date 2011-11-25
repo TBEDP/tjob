@@ -134,15 +134,15 @@ a:hover {
 	text-align: center;
 	font-size: 15px;
 	font-weight: bold;
-	background: #fff;
-  color: #8cc84b;
+	background: #8cc84b;
+  color: #000;
   border-radius: 3px 3px 0 0;
   margin-right: 5px;
 }
 
 #menu a:hover, #menu .active a {
-	background: #8cc84b;
-	color: #000;
+	background: #fff;
+  color: #8cc84b;
 }
 
 /* Search */

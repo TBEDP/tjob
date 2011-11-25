@@ -25,31 +25,30 @@ var require_admin = function(req, res, next) {
     }
 };
 
-module.exports = function(app){
+module.exports = function(app) {
     
-    // auto load current_user role
-    app.use(function(req, res, next) {
-        var current_user = req.session.user;
-        if(!current_user || !current_user.user_id) {
-            res.local('current_user', null);
-            return next();
+  // auto load current_user role
+  app.use(function(req, res, next) {
+    var current_user = req.session.user;
+    if(!current_user || !current_user.user_id) {
+      res.local('current_user', null);
+      return next();
+    }
+    User.get(current_user.user_id, function(err, user) {
+      if(user) {
+        if(user.role) {
+          current_user.is_author = user.role.indexOf('author') >= 0;
+          current_user.is_admin = user.role.indexOf('admin') >= 0;
         }
-        console.log(current_user)
-        User.get(current_user.user_id, function(err, user) {
-            if(user) {
-                if(user.role) {
-                    current_user.is_author = user.role.indexOf('author') >= 0;
-                    current_user.is_admin = user.role.indexOf('admin') >= 0;
-                }
-                if(!current_user.is_admin) {
-                    current_user.is_admin = user.user_id == config.admin.user_id;
-                }
-                req.session.user = current_user;
-            }
-            res.local('current_user', req.session.user);
-            next();
-        }); 
-    });
+        if(!current_user.is_admin) {
+          current_user.is_admin = user.user_id == config.admin.user_id;
+        }
+        req.session.user = current_user;
+      }
+      res.local('current_user', req.session.user);
+      next();
+    }); 
+  });
     
 //    app.get('/login/:blogtype', function(req, res) {
 //        var blogtype = req.params.blogtype;

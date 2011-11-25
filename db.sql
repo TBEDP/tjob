@@ -1,5 +1,8 @@
+
+use `nodejob`;
+
 -- 职位信息表
-CREATE TABLE  `tjob`.`job` (
+CREATE TABLE  `job` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(200) DEFAULT NULL,
   `desc` varchar(300) DEFAULT NULL COMMENT '要摘',
@@ -28,7 +31,7 @@ CREATE TABLE  `tjob`.`job` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-CREATE TABLE  `tjob`.`job_repost` (
+CREATE TABLE  `job_repost` (
   `id` varchar(50) NOT NULL,
   `source_id` varchar(50) NOT NULL,
   `user_id` varchar(50) NOT NULL,
@@ -39,7 +42,7 @@ CREATE TABLE  `tjob`.`job_repost` (
   KEY `source_id` (`source_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `tjob`.`job_resume` (
+CREATE TABLE  `job_resume` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `job_id` int(10) unsigned NOT NULL,
   `user_id` varchar(50) NOT NULL,
@@ -56,7 +59,7 @@ CREATE TABLE  `tjob`.`job_resume` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='职位简历';
 
 -- 用户信息表
-CREATE TABLE  `tjob`.`user` (
+CREATE TABLE  `user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` varchar(50) DEFAULT NULL,
   `blogtype` varchar(20) DEFAULT NULL,
@@ -73,17 +76,17 @@ CREATE TABLE  `tjob`.`user` (
 
 -- update sql
 
-ALTER TABLE `tjob`.`job` ADD COLUMN `question_id` int  COMMENT '问答id，如果没有问题，则为空' AFTER `repost_id`;
+ALTER TABLE `job` ADD COLUMN `question_id` int  COMMENT '问答id，如果没有问题，则为空' AFTER `repost_id`;
 
-ALTER TABLE `tjob`.`job_resume` ADD COLUMN `answer_id` int;
+ALTER TABLE `job_resume` ADD COLUMN `answer_id` int;
 
-ALTER TABLE `tjob`.`job_resume` MODIFY COLUMN `introducer` VARCHAR(50)  CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '职位介绍人',
+ALTER TABLE `job_resume` MODIFY COLUMN `introducer` VARCHAR(50)  CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '职位介绍人',
  MODIFY COLUMN `filepath` VARCHAR(1000)  CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
  MODIFY COLUMN `size` INTEGER UNSIGNED DEFAULT NULL,
  ADD COLUMN `comment` longtext  COMMENT '反馈' AFTER `answer_id`;
 
 
-CREATE TABLE  `tjob`.`question` (
+CREATE TABLE  `question` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `category` varchar(50) DEFAULT NULL COMMENT '问题类别\n',
   `content` longtext,
@@ -92,7 +95,7 @@ CREATE TABLE  `tjob`.`question` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `tjob`.`answer` (
+CREATE TABLE  `answer` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `question_id` int(11) DEFAULT NULL,
   `content` longtext,
@@ -105,9 +108,9 @@ CREATE TABLE  `tjob`.`answer` (
 
 -- 3.24
 
-ALTER TABLE `tjob`.`job` ADD COLUMN `like_count` int UNSIGNED DEFAULT 0 AFTER `resume_count`;
+ALTER TABLE `job` ADD COLUMN `like_count` int UNSIGNED DEFAULT 0 AFTER `resume_count`;
 
-CREATE TABLE `tjob`.`job_like` (
+CREATE TABLE `job_like` (
   `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
   `job_id` int UNSIGNED,
   `user_id` varchar(50) ,
@@ -116,18 +119,18 @@ CREATE TABLE `tjob`.`job_like` (
   unique INDEX `job_user`(`job_id`, `user_id`)
 )
 ENGINE = InnoDB DEFAULT CHARSET=utf8;
-ALTER TABLE `tjob`.`job_like` ADD INDEX `jobid`(`job_id`),
+ALTER TABLE `job_like` ADD INDEX `jobid`(`job_id`),
  ADD INDEX `user_id`(`user_id`);
 
 -- 3.28 add user_friends: 用户跟随的人
 
-ALTER TABLE `tjob`.`user` ADD COLUMN `fetch_friends_cursor` varchar(100)  
+ALTER TABLE `user` ADD COLUMN `fetch_friends_cursor` varchar(100)  
     DEFAULT NULL COMMENT '获取所关注的人游标' AFTER `updated_at`;
-ALTER TABLE `tjob`.`user` ADD COLUMN `fetch_friends_date` datetime  
+ALTER TABLE `user` ADD COLUMN `fetch_friends_date` datetime  
     COMMENT '获取关注人的时间' AFTER `fetch_friends_cursor`;
 
 
-CREATE TABLE  `tjob`.`user_friends` (
+CREATE TABLE  `user_friends` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` varchar(50) DEFAULT NULL COMMENT '用户id',
   `friend_id` varchar(50) DEFAULT NULL COMMENT '用户跟随的人的id',
@@ -142,12 +145,12 @@ CREATE TABLE  `tjob`.`user_friends` (
 -- 执行 node fixed_job_repost_user_id.js 修复job_repost user_id格式不正确的问题
 
 -- 6.12 add screen_name to user
-ALTER TABLE `tjob`.`user` ADD COLUMN `screen_name` varchar(200)   
+ALTER TABLE `user` ADD COLUMN `screen_name` varchar(200)   
     COMMENT '显示名称' AFTER `user_id`;
-ALTER TABLE `tjob`.`user` ADD INDEX `screen_name`(`screen_name`);
+ALTER TABLE `user` ADD INDEX `screen_name`(`screen_name`);
 
 -- 8.4 add tag
-CREATE TABLE  `tjob`.`tag` (
+CREATE TABLE  `tag` (
   `id` int(10) unsigned AUTO_INCREMENT,
   `name` varchar(100) DEFAULT NULL,
   `text` text COMMENT '描述',
@@ -158,7 +161,7 @@ CREATE TABLE  `tjob`.`tag` (
   KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `tjob`.`tag_job` (
+CREATE TABLE  `tag_job` (
   `id` int(10) unsigned AUTO_INCREMENT,
   `job` int(10) unsigned,
   `tag` int(10) unsigned,
@@ -167,13 +170,13 @@ CREATE TABLE  `tjob`.`tag_job` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 8.16 add remark
-alter table `tjob`.`job_resume` add column `remark` text after `status`;
+alter table `job_resume` add column `remark` text after `status`;
 
 -- 9.2 add tag summary
-alter table `tjob`.`tag` add column `summary` text after `text`;
+alter table `tag` add column `summary` text after `text`;
 
 -- 9.5 add job_resume_remark table
-CREATE TABLE  `tjob`.`job_resume_remark` (
+CREATE TABLE  `job_resume_remark` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `resume_id` int(10) unsigned NOT NULL,
   `remark` text,
@@ -184,7 +187,7 @@ CREATE TABLE  `tjob`.`job_resume_remark` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- 9.6 tag_user
-CREATE TABLE  `tjob`.`tag_user` (
+CREATE TABLE  `tag_user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tag_id` int(10) unsigned NOT NULL,
   `user_id` varchar(50) NOT NULL,
