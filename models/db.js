@@ -1,6 +1,6 @@
-var mysql = require('mysql'),
-    Client = mysql.Client,
-	config = require('../config.js');
+var mysql = require('mysql');
+var Client = mysql.Client;
+var conf = require('../config.js');
 
 var Literal = function(val) {
 	this.value = val;
@@ -110,7 +110,7 @@ Client.prototype.get_objs = function(table, key, values, callback) {
     });
 };
 
-var mysql_db = mysql.createClient(config.db_options);
+var mysql_db = mysql.createClient(conf.database);
 //mysql_db.connect(function(err) {
 //    if(err) {
 //        console.error('connect db ' + mysql_db.host + ' error: ' + err);

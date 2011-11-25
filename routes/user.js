@@ -3,6 +3,7 @@ var User = require('../models/user')
   , config = require('../config')
   , tapi = config.tapi
   , util = require('../public/js/util');
+var weibo = require('weibo');
 
 //必须具有author角色
 var require_author = function(req, res, next) {
@@ -33,6 +34,7 @@ module.exports = function(app){
             res.local('current_user', null);
             return next();
         }
+        console.log(current_user)
         User.get(current_user.user_id, function(err, user) {
             if(user) {
                 if(user.role) {
@@ -40,7 +42,7 @@ module.exports = function(app){
                     current_user.is_admin = user.role.indexOf('admin') >= 0;
                 }
                 if(!current_user.is_admin) {
-                    current_user.is_admin = user.screen_name == config.tjob_user.screen_name;
+                    current_user.is_admin = user.user_id == config.admin.user_id;
                 }
                 req.session.user = current_user;
             }
@@ -49,24 +51,24 @@ module.exports = function(app){
         }); 
     });
     
-    app.get('/login/:blogtype', function(req, res) {
-        var blogtype = req.params.blogtype;
-        var user = {blogtype: blogtype};
-        var auth_callback = config.base_url + '/callback/' + blogtype;
-        var referer = req.header('Referer') || '/';
-        // 防止死跳转
-        if(referer.indexOf('/login/') >= 0) {
-            referer = '/';
-        }
-        tapi.get_authorization_url(user, auth_callback, function(err, auth_url) {
-            if(auth_url) {
-                req.session.authinfo = [user.oauth_token_secret, referer];
-                res.redirect(auth_url);
-            } else {
-                res.send('新浪登录异常: ' + err.message +' ，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
-            }
-        });
-    });
+//    app.get('/login/:blogtype', function(req, res) {
+//        var blogtype = req.params.blogtype;
+//        var user = {blogtype: blogtype};
+//        var auth_callback = config.base_url + '/callback/' + blogtype;
+//        var referer = req.header('Referer') || '/';
+//        // 防止死跳转
+//        if(referer.indexOf('/login/') >= 0) {
+//            referer = '/';
+//        }
+//        tapi.get_authorization_url(user, auth_callback, function(err, auth_url) {
+//            if(auth_url) {
+//                req.session.authinfo = [user.oauth_token_secret, referer];
+//                res.redirect(auth_url);
+//            } else {
+//                res.send('新浪登录异常: ' + err.message +' ，请重试. <a href="/login/' + blogtype + '">新浪登录</a>');
+//            }
+//        });
+//    });
 
     // http://localhost:3000/callback/tsina?oauth_token=abb89bbf577a98fe8a3334f32f34dfa5&oauth_verifier=653225
     app.get('/callback/:blogtype', function(req, res, next){
@@ -207,6 +209,31 @@ module.exports = function(app){
         });
     });
 };
+
+module.exports.oauth_handle = weibo.oauth_middleware(function(oauth_user, referer, req, res, callback) {
+  //获取用户信息并存储
+  tapi.verify_credentials(oauth_user, function(error, t_user) {
+      if(error) {
+          return res.send('verify_credentials 异常: ' + error.message +' ，请重试. <a href="/login/' + blogtype + '">登录</a>');
+      }
+      Object.extend(t_user, oauth_user);
+      var user_id = oauth_user.blogtype + ':' + t_user.id;
+      t_user.user_id = user_id;
+      User.insert(t_user, function(err, result) {
+          if(err) {
+              return next(err);
+          }
+          // affectedRows == 1 代表是insert，第一次获取将爬取用户好友信息
+          if(result.affectedRows == 1) {
+              User.fetch_user_friends(t_user, function(err, friends_data){
+//                    console.log('fetch friends', friends_data.users.length);
+              });
+          }
+          req.session.user = t_user;
+          res.redirect(referer);
+      });
+  });
+});
 
 module.exports.require_author = require_author;
 module.exports.require_admin = require_admin;

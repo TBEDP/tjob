@@ -2,16 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<title>{{if title}}${title} - {{/if}}淘Job</title>
-	<meta name="keywords" content="" />
-	<meta name="description" content="" />
-	<link href="/css/default.css" rel="stylesheet" type="text/css" />
-	<link type="text/css" rel="stylesheet" href="/jqueryui/css/ui-lightness/jquery-ui-1.8.11.css" />
+	<title>{{if title}}${title} - {{/if}}${config.site.title}</title>
+	<meta name="keywords" content="job,hr,nodejs" />
+	<meta name="description" content="${config.site.description}" />
+	<link rel="shortcut icon" href="/theme/${config.site.theme}/favicon.ico" />
+	<link rel="stylesheet" href="/theme/${config.site.theme}/css/default.css" />
+	<link rel="stylesheet" href="/jqueryui/css/ui-lightness/jquery-ui-1.8.11.css" />
 	<script src="/js/jquery-1.6.3.min.js"></script>
 	<script src="/jqueryui/js/jquery-ui-1.8.11.min.js"></script>
 	<script src="/js/util.js?v=1"></script>
 	<script src="/js/constant.js"></script>
-    <script src="/js/main.js?v=1"></script>
+  <script src="/js/main.js?v=1"></script>
 </head>
 <body>
 <div id="pageloading" style="display:none;">正在加载...</div> 
@@ -24,7 +25,7 @@ $(document).ready(function(){
 <div id="wrapper">
     <div id="header">
         <div id="logo">
-            <a href="/"><img alt="淘Job, 来淘宝工作吧" src="/images/tjob.jpg" /></a>
+            <a href="/"><img alt="淘Job, 来淘宝工作吧" src="/theme/${config.site.theme}/images/logo.jpg" /></a>
         </div>
         <!-- end div#logo -->
         <div id="menu">
@@ -69,7 +70,7 @@ $(document).ready(function(){
                            </li>
                            {{else}}
                            <li>
-                               <a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
+                               <a href="/oauth?blogtype=tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
                            </li>
                            {{/if}}
                            {{if current_user && current_user.is_admin }}
@@ -108,7 +109,7 @@ $(document).ready(function(){
 </div>
 <!-- end div#wrapper -->
 <div id="footer">
-    <p id="legal">Copyright &copy; 2011 <img src="/favicon.ico" />taobao.com. All Rights Reserved. 
+    <p id="legal">Copyright &copy; 2011 ${config.site.domain}. All Rights Reserved. 
     <script type="text/javascript" src="http://js.tongji.linezing.com/2341473/tongji.js"></script><noscript><a href="http://www.linezing.com"><img src="http://img.tongji.linezing.com/2341473/tongji.gif"/></a></noscript>
     </p>
 </div>

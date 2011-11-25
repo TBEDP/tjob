@@ -1,81 +1,60 @@
 // tjob web
 
-var express = require('express'),
-	path = require('path'),
-	fs = require('fs'),
-	form = require('connect-form'),
-	config = require('./config.js'),
-	tapi = config.tapi,
-	utillib = require('./public/js/util.js'),
-	uploadfile = require('./lib/uploadfile'),
-	RedisStore = require('connect-redis')(express);
-	//nStoreSession = require('./lib/nstore-session');
+var express = require('express');
+var path = require('path');
+var fs = require('fs');
+var form = require('connect-form');
+var config = require('./config.js');
+var weibo = require('weibo');
+var utillib = require('./public/js/util.js');
+var uploadfile = require('./lib/uploadfile');
+var RedisStore = require('connect-redis')(express);
+var user = require('./routes/user');
 
-////fixed express download cancel bug:
-//require('http').ServerResponse.prototype.download = function(path, filename, fn){
-//	var self = this;
-//	// support callback as second arg
-//	if ('function' == typeof filename) {
-//		fn = filename;
-//		filename = null;
-//	}
-//	// transfer the file
-//	this.attachment(filename || path).sendfile(path, function(err){
-//	    //if (err) self.removeHeader('Content-Disposition');
-//		if (fn) return fn(err);
-//		if (err) {
-//		self.req.next('ENOENT' == err.code
-//	        ? null
-//	        : err);
-//	    }
-//	});
-//};
-
-var static_options = {maxAge: 3600000 * 24 * 30};
+var static_options = { maxAge: 3600000 * 24 * 30 };
 var MAX_AGE = 3600 * 24 * 14;
 var app = express.createServer(
-    form({ uploadDir: config.filedir, keepExtensions: true })
-  , function(req, res, next) {
-        if(req.form) {
-            req.form.complete(function(err, fields, files){
-                req.body = {};
-                if(!err) {
-                    req.form.fields = fields;
-                    req.form.files = files;
-                    req.body = fields;
-                }
-                next(err);
-            });
-        } else {
-            return next();
+  form({ uploadDir: config.filedir, keepExtensions: true }), 
+  function(req, res, next) {
+    if(req.form) {
+      req.form.complete(function(err, fields, files){
+        req.body = {};
+        if(!err) {
+          req.form.fields = fields;
+          req.form.files = files;
+          req.body = fields;
         }
+        next(err);
+      });
+    } else {
+      return next();
     }
-  , express.static(__dirname + '/public', static_options)
-  , express.cookieParser()
-  , express.bodyParser()
-  , express.session({ 
-      secret: config.session_secret
-    //, store: new nStoreSession({maxAge: MAX_AGE, dbFile: __dirname + "/sessions.db"})
-    , store: new RedisStore({host: config.session_host})
-  })
-//  , express.csrf()
-  , express.errorHandler({ dumpExceptions: true, showStack: true })
+  }, 
+  express.static(__dirname + '/public', static_options), 
+  express.cookieParser(), 
+  express.bodyParser(), 
+  express.session({ 
+    secret: config.session.secret, 
+    store: new RedisStore({host: config.session.host})
+  }), 
+  user.oauth_handle,
+  express.errorHandler({ dumpExceptions: true, showStack: true })
 );
+
 var logger_options = {
 	format: ':http-version|:method|:url|:status|:response-time|:remote-addr|:referrer|:date|:user-agent'
 };
-if(!config.debug) {
+if (!config.debug) {
     //日志格式
-    var log_path = path.join(__dirname, 'web.log');
-    console.log('log file:', log_path);
-    var log_write_stream = fs.createWriteStream(log_path, {flags: 'a'});
-    process.on('exit', function(){
-        console.log('process exit, log end()');
-        log_write_stream.end();
-    });
-    logger_options.stream = log_write_stream;
+  var log_path = path.join(__dirname, 'web.log');
+  console.log('log file:', log_path);
+  var log_write_stream = fs.createWriteStream(log_path, { flags: 'a' });
+  process.on('exit', function() {
+    console.log('process exit, log end()');
+    log_write_stream.end();
+  });
+  logger_options.stream = log_write_stream;
 }
-//app.use(express.logger(logger_options));
 
 // use jqtpl in express
 app.set("view engine", "html");
@@ -85,7 +64,11 @@ app.set('view options', {
 	layout: 'layout.html'
 });
 
-require('./routes/user')(app); // must first
+app.helpers({
+  config: config
+});
+
+user(app); // must first
 require('./routes/job')(app);
 require('./routes/resume')(app);
 require('./routes/tag')(app);
@@ -97,11 +80,11 @@ utillib.mkdirs(upload_dir, '777', function(){
 	app.post('/upload', uploadfile.upload(upload_dir));
 	app.get('/down/:name', uploadfile.download(upload_dir, {field: 'name'}));
 	// 查看简历
-	app.get('/download', uploadfile.download(config.filedir, {field: 'p'}));
+	app.get('/download', uploadfile.download(config.FILE_DIR, {field: 'p'}));
 });
 
-app.listen(config.port, '127.0.0.1');
-console.log(new Date() + ' web server start', config.base_url);
+app.listen(config.port);
+console.log(new Date() + ' web server start');
 
 //catch all exception
 process.on('uncaughtException', function (err) {

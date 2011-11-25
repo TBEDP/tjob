@@ -113,7 +113,6 @@ a:hover {
 	height: 54px;
 	margin-left: 290px;
 	margin-top: 10px;
-	/* background: url(/images/menu.jpg) no-repeat left top; */
 	background-color: #ececec;
 	border-radius: 5px;
 }
@@ -253,7 +252,7 @@ a:hover {
 	margin: 0;
 	padding: 9px 0px;
 	border: none;
-	background: url(/images/sidebar.jpg) repeat-x left bottom;
+	background: url(../images/sidebar.jpg) repeat-x left bottom;
 }
 
 #sidebar h2 {

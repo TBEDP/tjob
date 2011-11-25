@@ -4,7 +4,6 @@ var doing = {
 		var result = false;
 		if($ele.prev('img.doing').length == 0) {
 			result = true;
-			$ele.before('<img class="doing" src="/images/loader-gray.gif" />');
 		}
 		return result;
 	}, 

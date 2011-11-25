@@ -20,9 +20,9 @@
         </p>
         
         {{if tags.length > 0}}
-        <p>职位标签:
+        <p class="tags">职位标签:&nbsp;&nbsp;
         {{each(i, tag) tags}}
-        <a href="/tag/${tag.id}">${tag.name}(${tag.count})</a>&nbsp;&nbsp;
+        <a href="/tag/${tag.id}">${tag.name}(${tag.count})</a>&nbsp;&nbsp;&nbsp;&nbsp;
         {{/each}}
         </p>
         
@@ -96,7 +96,7 @@
             </form>
             {{else}}
             <p>
-                你目前还没有登录，请先登录。<br/><a href="/login/tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
+                你目前还没有登录，请先登录。<br/><a href="/oauth?blogtype=tsina"><img src="http://open.sinaimg.cn/wikipic/button/24.png" /></a>
             </p>
             {{/if}}
         {{else}}
