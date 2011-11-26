@@ -243,7 +243,7 @@ module.exports = function(app) {
             params.filepath = filepath;
             params.size = files.resume.size;
             // jobid/userid/filename
-            var save_path = path.join(config.filedir, filepath);
+            var save_path = path.join(config.FILE_DIR, filepath);
             util.mkdirs(path.dirname(save_path), '777', function(err) {
                 if(err) {
                     return ep.emit('save_file', err);

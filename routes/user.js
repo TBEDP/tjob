@@ -1,9 +1,9 @@
 
-var User = require('../models/user')
-  , config = require('../config')
-  , tapi = config.tapi
-  , util = require('../public/js/util');
+var User = require('../models/user');
+var config = require('../config');
+var util = require('../public/js/util');
 var weibo = require('weibo');
+var tapi = weibo.tapi;
 
 //必须具有author角色
 var require_author = function(req, res, next) {
@@ -224,7 +224,7 @@ module.exports.oauth_handle = weibo.oauth_middleware(function(oauth_user, refere
           }
           // affectedRows == 1 代表是insert，第一次获取将爬取用户好友信息
           if(result.affectedRows == 1) {
-              User.fetch_user_friends(t_user, function(err, friends_data){
+              User.fetch_user_friends(t_user, function(err, friends_data) {
 //                    console.log('fetch friends', friends_data.users.length);
               });
           }

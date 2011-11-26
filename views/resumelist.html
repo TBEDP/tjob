@@ -13,9 +13,14 @@ $(document).ready(function(){
         var $this = $(this);
         var status = $this.attr('checked') ? 1 : 0;
         var id = $this.parent().next().text();
-        $this.attr('disabled', 'disabled');
+        $this.attr('disabled', false);
         $.post('/resumes/update/' + id, {status: status}, function(data) {
-            $this.attr('disabled', '');
+          $this.removeAttr('disabled');
+          if(status === 0) {
+            $this.removeAttr('checked');
+          } else {
+            $this.attr('checked', true);
+          }
         });
     });
     

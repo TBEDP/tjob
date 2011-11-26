@@ -1,31 +1,33 @@
+/**
+ * Job handler
+ */
 
-var path = require('path')
-  , fs = require('fs')
-  , EventProxy = require('../lib/eventproxy.js').EventProxy
-  , config = require('../config.js')
-  , tapi = config.tapi
-  , util = require('../public/js/util.js')
-  , constant = require('../public/js/constant.js')
-  , User = require('../models/user')
-  , Job = require('../models/job')
-  , Tag = require('../models/tag')
-  , Resume = require('../models/resume')
-  , userauth = require('./user')
-  , db = require('../models/db').mysql_db;
+var path = require('path');
+var fs = require('fs');
+var EventProxy = require('../lib/eventproxy.js').EventProxy;
+var config = require('../config.js');
+var tapi = config.tapi;
+var util = require('../public/js/util.js');
+var constant = require('../public/js/constant.js');
+var User = require('../models/user');
+var Job = require('../models/job');
+var Tag = require('../models/tag');
+var Resume = require('../models/resume');
+var userauth = require('./user');
+var db = require('../models/db').mysql_db;
 
-
-module.exports = function(app){
-    // 热门职位
-    app.get('/job/hot', function(req, res, next){
-        Job.get_hots(function(err, rows){
-            var jobs = rows || [], host = req.headers['host'];
-            for(var i = 0, l = jobs.length; i < l; i++) {
-                var job = jobs[i];
-                job.url = 'http://' + host + '/job/' + job.id;
-            }
-            res.send(JSON.stringify(jobs));
-        });
+module.exports = function(app) {
+  // 热门职位
+  app.get('/job/hot', function(req, res, next) {
+    Job.get_hots(function(err, rows) {
+      var jobs = rows || [], host = req.headers['host'];
+      for (var i = 0, l = jobs.length; i < l; i++) {
+        var job = jobs[i];
+        job.url = 'http://' + host + '/job/' + job.id;
+      }
+      res.send(JSON.stringify(jobs));
     });
+  });
     
     // 添加职位信息
     app.get('/job/create', userauth.require_author, 
@@ -124,7 +126,7 @@ module.exports = function(app){
                     var job_id = r.insertId;
                     var redirect_url = '/job/' + job_id;
                     if(params.sync_weibo) {
-                     // 使用当前登录用户发一条微博
+                        // 使用当前登录用户发一条微博
                         var update_data = Job.format_weibo_status(params, job_id);
                         update_data.user = req.session.user;
                         tapi.update(update_data, function(err, data){

@@ -14,7 +14,7 @@ var user = require('./routes/user');
 var static_options = { maxAge: 3600000 * 24 * 30 };
 var MAX_AGE = 3600 * 24 * 14;
 var app = express.createServer(
-  form({ uploadDir: config.filedir, keepExtensions: true }), 
+  form({ uploadDir: config.FILE_DIR, keepExtensions: true }), 
   function(req, res, next) {
     if(req.form) {
       req.form.complete(function(err, fields, files){
@@ -24,6 +24,7 @@ var app = express.createServer(
           req.form.files = files;
           req.body = fields;
         }
+        console.log(req.form)
         next(err);
       });
     } else {
@@ -42,7 +43,7 @@ var app = express.createServer(
 );
 
 var logger_options = {
-	format: ':http-version|:method|:url|:status|:response-time|:remote-addr|:referrer|:date|:user-agent'
+  format: ':http-version|:method|:url|:status|:response-time|:remote-addr|:referrer|:date|:user-agent'
 };
 if (!config.debug) {
     //日志格式
@@ -75,21 +76,21 @@ require('./routes/tag')(app);
 require('./routes/site')(app);
 
 // 设置文件上传
-var upload_dir = config.filedir + '/upload';
+var upload_dir = config.FILE_DIR + '/upload';
 utillib.mkdirs(upload_dir, '777', function(){
-	app.post('/upload', uploadfile.upload(upload_dir));
-	app.get('/down/:name', uploadfile.download(upload_dir, {field: 'name'}));
-	// 查看简历
-	app.get('/download', uploadfile.download(config.FILE_DIR, {field: 'p'}));
+  app.post('/upload', uploadfile.upload(upload_dir));
+  app.get('/down/:name', uploadfile.download(upload_dir, {field: 'name'}));
+  // 查看简历
+  app.get('/download', uploadfile.download(config.FILE_DIR, {field: 'p'}));
 });
 
-app.listen(config.port);
-console.log(new Date() + ' web server start');
+app.listen(config.site.port);
+console.log(new Date() + ' web server start at ' + config.site.homeurl);
 
 //catch all exception
 process.on('uncaughtException', function (err) {
-	console.error('Uncaught exception: ' + err);
-	console.error(err.message);
-	console.error(err.stack);
-	process.exit();
+  console.error('Uncaught exception: ' + err);
+  console.error(err.message);
+  console.error(err.stack);
+  process.exit();
 });

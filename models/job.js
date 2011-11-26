@@ -155,21 +155,20 @@ Job.unlike = function(job_id, user_id, callback) {
 };
 
 Job.get_likes = function(user_id, callback) {
-    var sql = 'select job_id from job_like where user_id=?';
-    db.query(sql, [user_id], callback);
+  var sql = 'select job_id from job_like where user_id=?';
+  db.query(sql, [user_id], callback);
 };
-
 
 //格式化微博正文
 Job.format_weibo_status = function(params, job_id) {
- var redirect_url = '/job/' + job_id;
- // 使用当前登录用户发一条微博
- var status = '招聘#' + params.title + '#: ' + params.desc;
- status += ' ' + config.base_url + redirect_url;
- var data = {status: status};
- if(params.send_image) {
-     // {keyname: 'pic', file: filepath}
-     data.pic = path.join(config.filedir, 'upload', params.send_image);
- }
- return data;
+  var redirect_url = '/job/' + job_id;
+  // 使用当前登录用户发一条微博
+  var status = '招聘#' + params.title + '#: ' + params.desc;
+  status += ' ' + config.site.homeurl + redirect_url;
+  var data = {status: status};
+  if(params.send_image) {
+    // {keyname: 'pic', file: filepath}
+    data.pic = path.join(config.filedir, 'upload', params.send_image);
+  }
+  return data;
 };

@@ -15,3 +15,9 @@ for(var blogtype in conf.weibo) {
 conf.tapi = weibo.tapi;
 
 conf.FILE_DIR = path.join(__dirname, 'files');
+
+var homeurl = 'http://' + conf.site.host;
+if(conf.site.port !== 80) {
+  homeurl += ':' + conf.site.port;
+}
+conf.site.homeurl = homeurl;

@@ -6,7 +6,6 @@
       "app_secret": "d119f62bfb70a4ba8d9b68bf14d6e45a"
     }
   },
-  "port": 9999,
   "session": {
     "host": "127.0.0.1",
     "secret": "I'm a seesion secret. Please change me in production env."
@@ -32,6 +31,8 @@
   "site": {
     "title": "淘Job",
     "description": "A job system",
-    "theme": "taojob"
+    "theme": "taojob",
+    "host": "taojobtest.tbdata.org",
+    "port": 9999
   }
 }
