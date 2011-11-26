@@ -24,7 +24,6 @@ var app = express.createServer(
           req.form.files = files;
           req.body = fields;
         }
-        console.log(req.form)
         next(err);
       });
     } else {

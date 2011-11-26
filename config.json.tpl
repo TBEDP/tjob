@@ -33,6 +33,7 @@
     "description": "A job system",
     "theme": "taojob",
     "host": "taojobtest.tbdata.org",
-    "port": 9999
+    "port": 9999,
+    "support_resume": true
   }
 }

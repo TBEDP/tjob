@@ -40,7 +40,7 @@
     </div>
     <div class="meta">
         <p class="links">
-            {{if current_user && current_user.is_author}}
+            {{if current_user && current_user.is_author && config.site.support_resume}}
             <a href="/resumes?status=all&job=${job.id}">查看简历(${job.resume_count})</a>
             &nbsp;&nbsp;
             {{/if}}
@@ -68,6 +68,7 @@
             {{/if}}
         </p>
     </div>
+    {{if config.site.support_resume}}
     <div>
         <a name="resume" href="#resume"></a>
         <h2>投递简历</h2>
@@ -104,5 +105,6 @@
         {{/if}}
     </div>
     <br />
+    {{/if}}
     <div id="repost_users"></div>
 </div>

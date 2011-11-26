@@ -3,7 +3,12 @@
 </h2>
 {{if current_user && current_user.is_author}}
 <p>
-    <a href="/tag/${tag.id}/edit">编辑标签</a> | <a href="/resumes?tag=${tag.id}">查看简历</a>
+    <a href="/tag/${tag.id}/edit">编辑标签</a>
+    {{if config.site.support_resume}}
+    |
+    <a href="/resumes?tag=${tag.id}">查看简历</a>
+    {{/if}}
+    
     {{if tag.users && tag.users.length > 0}}
     <br/>
     简历负责人：
@@ -31,7 +36,7 @@
     </div>
     <div class="meta">
         <p class="links">
-            {{if current_user && current_user.is_author}}
+            {{if current_user && current_user.is_author && config.site.support_resume }}
             <a href="/resumes?status=all&job=${job.id}">查看简历(${job.resume_count})</a>
             &nbsp;&nbsp;
             {{/if}}
