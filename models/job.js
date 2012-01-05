@@ -168,7 +168,7 @@ Job.format_weibo_status = function(params, job_id) {
   var data = {status: status};
   if(params.send_image) {
     // {keyname: 'pic', file: filepath}
-    data.pic = path.join(config.filedir, 'upload', params.send_image);
+    data.pic = path.join(config.FILE_DIR, 'upload', params.send_image);
   }
   return data;
 };

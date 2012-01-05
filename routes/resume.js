@@ -210,7 +210,7 @@ module.exports = function(app) {
         if(!req.session.user || !req.session.user.user_id) {
             return res.send('用户未登录.');
         }
-        var fields = req.form.fields, files = req.form.files;
+        var fields = req.body, files = req.files;
         var filepath = files.resume ? files.resume.filename : null;
         // 判断是否合法的文件类型
         if(filepath && !util.is_filetype(filepath, constant.RESUME_FILETYPES)) {

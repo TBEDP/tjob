@@ -1,9 +1,9 @@
 // tjob web
 
 var express = require('express');
+var jqtpl = require("jqtpl");
 var path = require('path');
 var fs = require('fs');
-var form = require('connect-form');
 var config = require('./config.js');
 var weibo = require('weibo');
 var utillib = require('./public/js/util.js');
@@ -14,25 +14,9 @@ var user = require('./routes/user');
 var static_options = { maxAge: 3600000 * 24 * 30 };
 var MAX_AGE = 3600 * 24 * 14;
 var app = express.createServer(
-  form({ uploadDir: config.FILE_DIR, keepExtensions: true }), 
-  function(req, res, next) {
-    if(req.form) {
-      req.form.complete(function(err, fields, files){
-        req.body = {};
-        if(!err) {
-          req.form.fields = fields;
-          req.form.files = files;
-          req.body = fields;
-        }
-        next(err);
-      });
-    } else {
-      return next();
-    }
-  }, 
+  express.bodyParser({ uploadDir: config.FILE_DIR, keepExtensions: true }), 
   express.static(__dirname + '/public', static_options), 
   express.cookieParser(), 
-  express.bodyParser(), 
   express.session({ 
     secret: config.session.secret, 
     store: new RedisStore({host: config.session.host})
@@ -59,7 +43,7 @@ if (!config.debug) {
 // use jqtpl in express
 app.set("view engine", "html");
 app.set("jsonp callback", "callback");
-app.register(".html", require("jqtpl").express);
+app.register(".html", jqtpl.express);
 app.set('view options', {
 	layout: 'layout.html'
 });

@@ -1,5 +1,14 @@
 {
   "name": "tjob",
-  "version": "0.2.0",
-  "author": "fengmk2<fengmk2@gmail.com>"
+  "version": "0.3.0",
+  "author": "fengmk2<fengmk2@gmail.com>",
+  "main": "app.js",
+  "dependencies": {
+    "express": "2.5.4",
+    "connect-redis": "1.2.0",
+    "mysql": "0.9.5",
+    "weibo": "0.3.0",
+    "jqtpl": "1.0.7",
+    "mime": "1.2.4"
+  }
 }

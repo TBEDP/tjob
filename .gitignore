@@ -7,3 +7,5 @@ sessions.db
 err.log
 out.log
 config.json
+tjob.sublime*
+node_modules

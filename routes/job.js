@@ -83,11 +83,11 @@ module.exports = function(app) {
     app.post('/job/create', userauth.require_author, function(req, res, next) {
         var params = req.body;
         params.author_id = req.session.user.user_id;
-        var tags = params['tags[]'];
+        var tags = params['tags'];
         if(typeof tags === 'string') {
             tags = [tags];
         }
-        delete params['tags[]'];
+        delete params['tags'];
         var job = {
             title: params.title,
             desc: params.desc,

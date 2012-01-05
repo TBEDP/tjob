@@ -1,12 +1,10 @@
 # TaoJob Web System base on [Nodejs](http://nodejs.org).
 
 ## Requires:
- * [connect](https://github.com/senchalabs/connect)
  * [express](http://expressjs.com), web application.
  * [jqtpl](https://github.com/kof/node-jqtpl), html template engine.
  * [node-mysql](https://github.com/felixge/node-mysql), db client to connect the mysql.
- * [connect-form](https://github.com/visionmedia/connect-form), handle file uploading.
- * [node-weibo](https://github.com/fengmk2/node-weibo), connect to weibo.
+ * [weibo](https://github.com/fengmk2/node-weibo), connect to weibo.
  * [eventproxy](https://github.com/JacksonTian/eventproxy), Far away deep callback.
  * [connect-redis](https://github.com/visionmedia/connect-redis), Redis Session Store for Connect.
 
